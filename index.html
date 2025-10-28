@@ -288,6 +288,40 @@
     h1{font-size:36px}
     .artist{height:100px}
   }
+
+  .transition-section {
+  text-align: center;
+  padding: 100px 20px;
+  background: linear-gradient(180deg, var(--accent), #fff);
+  color: #fff;
+}
+
+.transition-content {
+  max-width: 600px;
+  margin: 0 auto;
+  background: rgba(0,0,0,0.2);
+  padding: 40px;
+  border-radius: 20px;
+  backdrop-filter: blur(10px);
+}
+
+.transition-section h2 {
+  font-size: 1.8em;
+  margin-bottom: 10px;
+}
+
+.transition-section p {
+  font-size: 1em;
+  color: #f0f0f0;
+  margin-bottom: 30px;
+}
+
+.btn.big {
+  padding: 14px 28px;
+  font-size: 1.1em;
+  border-radius: 50px;
+}
+
 </style>
 </head>
 <body>
@@ -299,7 +333,7 @@
     <div class="overlay"></div>
     <img src="assets/NORAEHYBE.PNG" alt="NORAE HYBE" class="hero-logo">
     <div class="hero-sub">HYBE NORAEBANG — Kpop Karaoke All Hybe Artists</div>
-    <button class="btn" onclick="goToSection('what')">Join & Scroll</button>
+    <button class="btn" onclick="startMusicAndScroll()">Join & Scroll</button>
   </div>
 </section>
 
@@ -308,6 +342,9 @@
   <div class="card">
     <h2>What is NORAE HYBE?</h2>
     <p><b>NORAE HYBE</b> is a year-end project organized by a collective of K-POP fan communities supporting artists under HYBE Labels, including BTS, TXT, Seventeen, Enhypen, TWS, ILLIT, Boynextdoor, LE SSERAFIM, &TEAM, and Katseye.</p>
+      <div class="controls">
+      <button class="btn" onclick="goToSection('details')">Next</button>
+    </div>
   </div>
 </section>
 
@@ -319,6 +356,9 @@
       <div><strong>📅 When:</strong> Sunday, December 14, 2025 — 12:00 onwards</div>
       <div><strong>📍 Where:</strong> Sukabumi - </div>
       <div><strong>👥 Who:</strong> Open for all HYBE fandoms — ARMY, CARAT, ENGENE, etc.</div>
+    </div>
+        <div class="controls">
+      <button class="btn" onclick="goToSection('artists')">Next</button>
     </div>
   </div>
 </section>
@@ -342,8 +382,21 @@
       <div class="artist" role="listitem"><img src="assets/11.png" alt="CORTIS logo"></div>
     </div>
     <div class="small">© 2025 HYBE Corporation</div>
+        <div class="controls">
+      <button class="btn" onclick="goToSection('form-step-1')">Next</button>
+    </div>
   </div>
 </section>
+
+<!-- Transition Section: Ready to Join -->
+<section id="join-transition" class="transition-section">
+  <div class="transition-content">
+    <h2>Ready to Sing Along?</h2>
+<p>Join the fun at NORAE HYBE and sing your favorite songs from your beloved HYBE artists!</p>
+<button class="btn big" onclick="goToSection('form-step-1')">Register Now ↓</button>
+  </div>
+</section>
+
 
 <!-- 4 Multi-step form start -->
 <!-- We'll implement steps in order; keep each step in own section for scrolling -->
@@ -401,7 +454,7 @@
 
     <!-- Tambahkan bagian ini -->
     <div class="small" id="ticketPriceInfo">
-      💸 Price per ticket: <b>Rp50.000</b>
+      💸 Price per ticket: <b>Rp85.000</b>
     </div>
     <!-- /Tambahan -->
 
@@ -410,31 +463,29 @@
 </section>
 
 
-<!-- Payment method -->
+<!-- Payment type -->
 <section id="form-step-7">
   <div class="form-step" data-step="7">
-    <h3>Step 7 — Payment Method</h3>
-    <div class="muted">Choose a payment method</div>
+    <h3>Step 7 — Payment Option</h3>
+    <div class="muted">Pilih jenis pembayaran</div>
     <div class="pay-grid" id="payGrid">
 
-<div class="pay-option" data-value="Blu">
-  <strong>Blu</strong>
-  <div class="muted">001045623223<br>a.n Thia Anisyafitri</div>
-</div>
+      <div class="pay-option" data-value="DP">
+        <strong>Down Payment (DP)</strong>
+        <div class="muted">Bayar terlebih dahulu sebesar <b>Rp50.000</b>, sisanya dibayarkan nanti.</div>
+      </div>
 
-<div class="pay-option" data-value="ShopeePay">
-  <strong>ShopeePay</strong>
-  <div class="muted">081221994247<br>a.n Thia Anisyafitri</div>
-</div>
-
-<div class="pay-option" data-value="Dana">
-  <strong>Dana</strong>
-  <div class="muted">081221994247<br>a.n Thia Anisyafitri</div>
-</div>
-
+      <div class="pay-option" data-value="Full">
+        <strong>Full Payment</strong>
+        <div class="muted">Bayar langsung lunas sebesar <b>Rp85.000</b>.</div>
       </div>
 
     </div>
+
+        <p class="muted" style="margin-top:1rem; font-size:0.9em;">
+      🗓️ Periode pembayaran berlangsung dari <b>1 November</b> hingga <b>30 November</b>.  
+  Pastikan pembayaran dilakukan dalam rentang tanggal tersebut.  
+  Setelah tanggal <b>30 November</b>, pendaftaran akan otomatis ditutup.</p>
     <input id="payment" type="hidden">
     <div class="controls">
       <button id="btn-7" class="btn" disabled>Next</button>
@@ -443,21 +494,55 @@
 </section>
 
 
-<!-- Upload proof -->
+<!-- Payment method -->
 <section id="form-step-8">
   <div class="form-step" data-step="8">
-    <h3>Step 8 — Upload Payment Proof</h3>
+    <h3>Step 8 — Payment Method</h3>
+    <div class="muted">Choose a payment method</div>
+
+    <!-- ubah id payGrid jadi payGridMethod -->
+    <div class="pay-grid" id="payGridMethod">
+      <div class="pay-option" data-value="Blu">
+        <strong>Blu</strong>
+        <div class="muted">001045623223<br>a.n Thia Anisyafitri</div>
+      </div>
+
+      <div class="pay-option" data-value="ShopeePay">
+        <strong>ShopeePay</strong>
+        <div class="muted">081221994247<br>a.n Thia Anisyafitri</div>
+      </div>
+
+      <div class="pay-option" data-value="Dana">
+        <strong>Dana</strong>
+        <div class="muted">081221994247<br>a.n Thia Anisyafitri</div>
+      </div>
+    </div>
+
+    <!-- ubah id payment jadi paymentMethod -->
+    <input id="paymentMethod" type="hidden">
+
+    <div class="controls">
+      <button id="btn-8" class="btn" disabled>Next</button>
+    </div>
+  </div>
+</section>
+
+
+<!-- Upload proof -->
+<section id="form-step-9">
+  <div class="form-step" data-step="9">
+    <h3>Step 9 — Upload Payment Proof</h3>
     <div class="muted">Upload screenshot/photo of your payment receipt (PNG/JPG)</div>
     <input id="proof" class="input" type="file" accept="image/*">
     <div class="small" id="proofName"></div>
-    <div class="controls"><button id="btn-8" class="btn" disabled>Next</button></div>
+    <div class="controls"><button id="btn-9" class="btn" disabled>Next</button></div>
   </div>
 </section>
 
 <!-- final: song request and submit -->
-<section id="form-step-9">
-  <div class="form-step" data-step="9">
-    <h3>Step 9 — Song Request</h3>
+<section id="form-step-10">
+  <div class="form-step" data-step="10">
+    <h3>Step 10 — Song Request</h3>
     <div class="muted">Which song would you like to sing?</div>
     <input id="song" class="input" placeholder="Song Title - Artist">
     <div class="controls">
@@ -578,7 +663,7 @@
 
       <!-- Salma -->
       <div class="member">
-        <a href="https://instagram.com/USERNAME_SALMA" target="_blank">
+        <a href="https://www.instagram.com/slmshaumi?igsh=MXRmdDVzYm9zZmp5dw==" target="_blank">
           <img src="assets/kak salma.png" alt="Salma">
           <h4>Salma Salsabila</h4>
           <p>Desain</p>
@@ -587,7 +672,7 @@
 
       <!-- Intan -->
       <div class="member">
-        <a href="https://instagram.com/USERNAME_INTAN" target="_blank">
+        <a href="https://www.instagram.com/intan.sri.wahyuni?igsh=b3Q4Njg4MTZpcmZ3" target="_blank">
           <img src="assets/intan.png" alt="Intan">
           <h4>Intan</h4>
           <p>Desain</p>
@@ -605,7 +690,7 @@
 
       <!-- Dita -->
       <div class="member">
-        <a href="https://instagram.com/USERNAME_DITA" target="_blank">
+        <a href="https://www.instagram.com/dditaaa__?igsh=MWk3YTAzZTV5bnVqcQ== " target="_blank">
           <img src="assets/kak dita.png" alt="Dita">
           <h4>Dita</h4>
           <p>Dokumentasi</p>
@@ -648,16 +733,13 @@
     <h3 style="margin-top:20px;">Sponsorship</h3>
     <div class="team-grid" style="margin-top:12px;">
       <!-- Ganti logo di assets/sponsor1.png dst -->
-      <div class="member"><img src="assets/sponsor1.png" alt="Sponsor 1"><h4>HYBE Official</h4><p>Main Sponsor</p></div>
-      <div class="member"><img src="assets/sponsor2.png" alt="Sponsor 2"><h4>Weverse</h4><p>Platform Partner</p></div>
-      <div class="member"><img src="assets/sponsor3.png" alt="Sponsor 3"><h4>Blu Bank</h4><p>Financial Partner</p></div>
-      <div class="member"><img src="assets/sponsor4.png" alt="Sponsor 4"><h4>Tokopedia</h4><p>Venue Support</p></div>
-      <div class="member"><img src="assets/sponsor5.png" alt="Sponsor 5"><h4>Gojek</h4><p>Transportation</p></div>
-      <div class="member"><img src="assets/sponsor6.png" alt="Sponsor 6"><h4>Yogurtime</h4><p>Snack Partner</p></div>
-      <div class="member"><img src="assets/sponsor7.png" alt="Sponsor 7"><h4>Canon</h4><p>Photo & Media</p></div>
-      <div class="member"><img src="assets/sponsor8.png" alt="Sponsor 8"><h4>Indomaret</h4><p>Retail Support</p></div>
-      <div class="member"><img src="assets/sponsor9.png" alt="Sponsor 9"><h4>Spotify</h4><p>Music Partner</p></div>
-      <div class="member"><img src="assets/sponsor10.png" alt="Sponsor 10"><h4>Twitter X</h4><p>Social Partner</p></div>
+      <div class="member"><img src="assets/cuci wangi.png" alt="Sponsor 1"><h4>Cuci Wangi</h4></div>
+      <div class="member"><img src="assets/gadget boss.png" alt="Sponsor 2"><h4>Gadget Boss</h4></div>
+      <div class="member"><img src="assets/go by eh_kook.png" alt="Sponsor 3"><h4>GO by eh_kook</h4></div>
+      <div class="member"><img src="assets/jeonkoocha.png" alt="Sponsor 4"><h4>Jeonkoocha</h4></div>
+      <div class="member"><img src="assets/my kim luv.png" alt="Sponsor 5"><h4>My Kim Luv</h4></div>
+      <div class="member"><img src="assets/notte.png" alt="Sponsor 6"><h4>Notte</h4></div>
+      <div class="member"><img src="assets/otsevenbts.png" alt="Sponsor 7"><h4>otsevenbts</h4><p>Carina Permana</p></div>
     </div>
 
     <!-- Media Partner Section -->
@@ -671,19 +753,6 @@
       <div class="member"><img src="assets/nbs.png" alt="Media 5"><h4>NBS FM 92.3</h4></div>
       <div class="member"><img src="assets/penamas.png" alt="Media 6"><h4>Penamas</h4></div>
       <div class="member"><img src="assets/hits sukabumi.png" alt="Media 7"><h4>Hits Sukabumi</h4></div>
-      <div class="member"><img src="assets/media8.png" alt="Media 8"><h4>K-Culture ID</h4><p>Culture Media</p></div>
-      <div class="member"><img src="assets/media9.png" alt="Media 9"><h4>Bangtan Buzz</h4><p>Social Media</p></div>
-      <div class="member"><img src="assets/media10.png" alt="Media 10"><h4>The K Times</h4><p>Press Media</p></div>
-      <div class="member"><img src="assets/media11.png" alt="Media 11"><h4>CaratSpace</h4><p>Community Partner</p></div>
-      <div class="member"><img src="assets/media12.png" alt="Media 12"><h4>Enhypen ID</h4><p>Fanbase Media</p></div>
-      <div class="member"><img src="assets/media13.png" alt="Media 13"><h4>Fearnot Zone</h4><p>Support Media</p></div>
-      <div class="member"><img src="assets/media14.png" alt="Media 14"><h4>BeliftNet</h4><p>Network Partner</p></div>
-      <div class="member"><img src="assets/media15.png" alt="Media 15"><h4>Kpopvibes</h4><p>Community</p></div>
-      <div class="member"><img src="assets/media16.png" alt="Media 16"><h4>HYBE Digest</h4><p>Editorial</p></div>
-      <div class="member"><img src="assets/media17.png" alt="Media 17"><h4>PopAsia ID</h4><p>Music Media</p></div>
-      <div class="member"><img src="assets/media18.png" alt="Media 18"><h4>Weverse Fanbase</h4><p>Community</p></div>
-      <div class="member"><img src="assets/media19.png" alt="Media 19"><h4>Soundwave</h4><p>Music Platform</p></div>
-      <div class="member"><img src="assets/media20.png" alt="Media 20"><h4>KpopID</h4><p>Local Partner</p></div>
     </div>
 
     <p class="small" style="margin-top:24px">Thank you to all sponsors and media partners for supporting the <b>NORAEHYBE</b>.</p>
@@ -693,12 +762,19 @@
 <!-- Progress dots -->
 <div class="dots" id="dots" aria-hidden="true"></div>
 
+<audio id="bgMusic" autoplay loop hidden>
+  <source src="assets/ENHYPEN_OUTSIDE_INSTRUMENT.mp3" type="audio/mpeg">
+  Your browser does not support the audio tag.
+</audio>
+
 <script>
 
   function validateAllSteps() {
     const requiredFields = [
-      'name', 'email', 'wa', 'social', 'fandom', 'tickets', 'song', 'payment', 'proof'
-    ];
+  'name', 'email', 'wa', 'social', 'fandom', 
+  'tickets', 'song', 'payment', 'paymentMethod', 'proof'
+];
+
 
     let allValid = true;
 
@@ -740,7 +816,7 @@
 
 const ticketInput = document.getElementById('tickets');
 const ticketInfo = document.getElementById('ticketPriceInfo');
-const ticketPrice = 50000; // harga per tiket
+const ticketPrice = 85000; // harga per tiket
 
 ticketInput.addEventListener('input', () => {
   const qty = parseInt(ticketInput.value) || 0;
@@ -807,7 +883,7 @@ handleInputValidation('wa', 'btn-3', v => v.trim().length >= 8);
 handleInputValidation('social', 'btn-4', v => v.trim().length > 0);
 handleInputValidation('fandom', 'btn-5', v => v.trim().length > 0);
 handleInputValidation('tickets', 'btn-6', v => v >= 1 && v <= 100);
-handleInputValidation('song', 'btn-9', v => v.trim().length > 0);
+handleInputValidation('song', 'btn-10', v => v.trim().length > 0);
 
 /* Payment step */
 document.querySelectorAll('.pay-option').forEach(opt => {
@@ -819,21 +895,22 @@ document.querySelectorAll('.pay-option').forEach(opt => {
   });
 });
 
-/* Upload proof (Step 8) */
+/* Upload proof (Step 9) */
 const proofInput = document.getElementById('proof');
 const proofName = document.getElementById('proofName');
-const btn8 = document.getElementById('btn-8');
+const btn9 = document.getElementById('btn-9');
 
 proofInput.addEventListener('change', () => {
   if (proofInput.files.length > 0) {
     const file = proofInput.files[0];
     proofName.textContent = `📎 Selected: ${file.name}`;
-    btn8.disabled = false;
+    btn9.disabled = false;
   } else {
     proofName.textContent = '';
-    btn8.disabled = true;
+    btn9.disabled = true;
   }
 });
+
 
 /* Next button handlers */
 for (let i = 1; i <= 8; i++) {
@@ -957,6 +1034,40 @@ document.querySelectorAll('.controls .btn').forEach(btn => {
     }
 
     if (next) next.scrollIntoView({ behavior: 'smooth' });
+  });
+});
+
+
+function startMusicAndScroll() {
+  const audio = document.getElementById('bgMusic');
+  if (audio) {
+    audio.play().catch(() => {
+      console.warn("Autoplay blocked — will start after user interacts again.");
+    });
+  }
+  goToSection('what'); // fungsi scroll sudah kamu punya
+}
+
+window.addEventListener('scroll', () => {
+  const submitAllBtn = document.getElementById('submitAll');
+  if (submitAllBtn) {
+    submitAllBtn.disabled = !validateAllSteps();
+  }
+});
+setInterval(() => {
+  const submitAllBtn = document.getElementById('submitAll');
+  if (submitAllBtn) {
+    submitAllBtn.disabled = !validateAllSteps();
+  }
+}, 1000);
+
+/* Payment Method (Step 8) */
+document.querySelectorAll('#payGridMethod .pay-option').forEach(opt => {
+  opt.addEventListener('click', () => {
+    document.querySelectorAll('#payGridMethod .pay-option').forEach(o => o.classList.remove('selected'));
+    opt.classList.add('selected');
+    document.getElementById('paymentMethod').value = opt.dataset.value;
+    document.getElementById('btn-8').disabled = false;
   });
 });
 

@@ -1,0 +1,9 @@
+{
+  "name": "noraehybe",
+  "version": "1.0.0",
+  "type": "module",
+  "dependencies": {
+    "pdf-lib": "^1.17.1",
+    "googleapis": "^133.0.0"
+  }
+}

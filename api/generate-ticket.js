@@ -9,6 +9,8 @@ export default async function handler(req, res) {
     if (req.method !== "POST") return res.status(405).json({ error: "Method Not Allowed" });
 
     const body = typeof req.body === "string" ? JSON.parse(req.body) : req.body;
+    console.log("📩 Received data from frontend:", data);
+
 
     const {
       name = "",
@@ -338,3 +340,4 @@ async function appendToSheet(rowObj, isUpdate = false) {
     throw e;
   }
 }
+

@@ -237,6 +237,8 @@
     width:100%;
     max-width:620px;
     margin-top:18px;
+    justify-content: center;
+    
   }
   .member{
     background:var(--dark-1);
@@ -265,6 +267,11 @@
   opacity: 0.9;
 }
 
+.member:hover img {
+  transform: scale(1.05);
+  box-shadow: 0 0 12px rgba(255, 255, 255, 0.25);
+}
+
 .member img {
   border-radius: 12px;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
@@ -287,7 +294,9 @@
     section{padding:80px 32px}
     h1{font-size:36px}
     .artist{height:100px}
-  }
+}
+
+
 
   .transition-section {
   text-align: center;
@@ -321,6 +330,11 @@
   font-size: 1.1em;
   border-radius: 50px;
 }
+.member.support {
+  opacity: 0.8;
+  background: rgba(58, 58, 58, 0.5);
+}
+
 
 </style>
 </head>
@@ -388,6 +402,7 @@
   </div>
 </section>
 
+<form id="ticketForm">
 <!-- Transition Section: Ready to Join -->
 <section id="join-transition" class="transition-section">
   <div class="transition-content">
@@ -546,7 +561,7 @@
     <div class="muted">Which song would you like to sing?</div>
     <input id="song" class="input" placeholder="Song Title - Artist">
     <div class="controls">
-      <button id="submitAll" class="btn" disabled>Submit All</button>
+      <button id="submitAll" type="submit" class="btn" disabled>Submit All</button>
     </div>
   </div>
 </section>
@@ -563,6 +578,7 @@
     </div>
   </div>
 </section>
+</form>
 
 <!-- Our Team -->
 <section id="team">
@@ -628,7 +644,7 @@
       <!-- Indah Audia -->
       <div class="member">
         <a href="http://instagram.com/audiarrr" target="_blank">
-          <img src="assets/kak odi.png" alt="Indah Audia">
+          <img src="assets/Kak odi.png" alt="Indah Audia">
           <h4>Indah Audia</h4>
           <p>Acara</p>
         </a>
@@ -708,15 +724,25 @@
 
       <!-- Salwa -->
       <div class="member">
-        <a href="https://instagram.com/USERNAME_SALWA" target="_blank">
+        <a href="https://www.instagram.com/salwaaa.al?igsh=ZTRvaWkwZjEza3N3&utm_source=qr" target="_blank">
           <img src="assets/kak salwa.png" alt="Salwa">
           <h4>Salwa</h4>
           <p>Humas</p>
         </a>
       </div>
-    </div>
+
+      <!-- Naffa -->
+<div class="member">
+  <a href="http://instagram.com/naffafbrnty" target="_blank">
+    <img src="assets/naffa.jpg" alt="Naffa">
+    <h4>Naffa</h4>
+    <p>Acara</p>
+  </a>
+  </div>
+</div>
 
     <p class="small" style="margin-top:18px">Click on a member to visit their Instagram profile!</p>
+
   </div>
 </section>
 
@@ -732,6 +758,7 @@
     <!-- Sponsorship Section -->
     <h3 style="margin-top:20px;">Sponsorship</h3>
     <div class="team-grid" style="margin-top:12px;">
+      <!-- Ganti logo di assets/sponsor1.png dst -->
       <div class="member"><img src="assets/cuci wangi.png" alt="Sponsor 1"><h4>Cuci Wangi</h4></div>
       <div class="member"><img src="assets/gadget boss.png" alt="Sponsor 2"><h4>Gadget Boss</h4></div>
       <div class="member"><img src="assets/go by eh_kook.png" alt="Sponsor 3"><h4>GO by eh_kook</h4></div>
@@ -744,6 +771,7 @@
     <!-- Media Partner Section -->
     <h3 style="margin-top:40px;">Media Partner</h3>
     <div class="team-grid" style="margin-top:12px;">
+      <!-- Ganti logo di assets/media1.png dst -->
       <div class="member"><img src="assets/ucil.png" alt="Ucil"><h4>ucilyouchill</h4></div>
       <div class="member"><img src="assets/hybe bandung.png" alt="Media 2"><h4>Hybe Family Bandung</h4></div>
       <div class="member"><img src="assets/event sukabumi.png" alt="Media 3"><h4>Event Sukabumi</h4></div>
@@ -1070,10 +1098,16 @@ document.querySelectorAll('#payGridMethod .pay-option').forEach(opt => {
 });
 
 </script>
-
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const form = document.getElementById('ticketForm');
+  if (form) {
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault(); // ⛔️ stop GET
+      await submitAllHandler(e); // 📨 kirim via fetch
+    });
+  }
+});
+</script>
 </body>
 </html>
-
-
-
-

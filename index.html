@@ -979,6 +979,8 @@ async function submitAllHandler(e) {
     proofBase64: null
   };
 
+  console.log("📦 Payload being sent:", payload);
+
   // convert proof file (if any) to base64
   const proofInput = document.getElementById('proof');
   if (proofInput && proofInput.files && proofInput.files[0]) {
@@ -1111,4 +1113,5 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
+
 

@@ -139,6 +139,12 @@ else {
       return res.status(500).json({ error: "Failed to send email", detail: result });
     }
 
+    // Upload bukti pembayaran ke imgbb (kalau ada)
+let proofUrl = null;
+if (body.proofBase64) {
+  proofUrl = await uploadToImgbb(body.proofBase64);
+}
+
     await appendToSheet({
   name,
   email,
@@ -150,11 +156,49 @@ else {
   paymentMethod, 
   song,
   issuedAt,
+  proofUrl,
 });
     return res.status(200).json({ success: true, message: "Email sent successfully" });
   } catch (err) {
     console.error("❌ API ERROR:", err);
     return res.status(500).json({ error: err.message || "Internal Server Error" });
+  }
+}
+
+/* === Upload Bukti Pembayaran ke imgbb === */
+async function uploadToImgbb(base64Image) {
+  try {
+    const apiKey = process.env.IMGBB_API_KEY; // ambil di imgbb.com
+    if (!apiKey) {
+      console.error("❌ IMGBB_API_KEY missing");
+      return null;
+    }
+
+    // pastikan ada base64 yang dikirim
+    if (!base64Image || !base64Image.startsWith("data:image")) {
+      console.warn("⚠️ No valid base64 image provided");
+      return null;
+    }
+
+    const form = new FormData();
+    form.append("image", base64Image.split(",")[1]); // hapus prefix "data:image/..."
+
+    const resp = await fetch(`https://api.imgbb.com/1/upload?key=${apiKey}`, {
+      method: "POST",
+      body: form,
+    });
+
+    const data = await resp.json();
+    if (data?.data?.url) {
+      console.log("✅ Bukti pembayaran terupload:", data.data.url);
+      return data.data.url;
+    } else {
+      console.error("❌ Upload ke imgbb gagal:", data);
+      return null;
+    }
+  } catch (err) {
+    console.error("❌ Upload error:", err);
+    return null;
   }
 }
 
@@ -192,6 +236,7 @@ async function appendToSheet(row) {
   row.paymentMethod, // 🆕 tambahkan ini
   row.song,
   row.issuedAt,
+  row.proofUrl || "-",
 ];
 
 
@@ -205,5 +250,6 @@ async function appendToSheet(row) {
 
   console.log("✅ Data appended to Google Sheets");
 }
+
 
 

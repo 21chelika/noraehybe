@@ -972,18 +972,20 @@ songInput.addEventListener('input', () => {
 async function submitAllHandler(e) {
   e && e.preventDefault && e.preventDefault();
 
-  const payload = {
-    name: document.getElementById('name').value.trim(),
-    email: document.getElementById('email').value.trim(),
-    wa: document.getElementById('wa').value.trim(),
-    social: document.getElementById('social').value.trim(),
-    fandom: document.getElementById('fandom').value.trim(),
-    tickets: document.getElementById('tickets').value || "1",
-    payment: document.getElementById('payment').value || '',
-    song: document.getElementById('song').value.trim() || '',
-    logoBase64: null,
-    proofBase64: null
-  };
+const payload = {
+  name: document.getElementById('name').value.trim(),
+  email: document.getElementById('email').value.trim(),
+  wa: document.getElementById('wa').value.trim(),
+  social: document.getElementById('social').value.trim(),
+  fandom: document.getElementById('fandom').value.trim(),
+  tickets: document.getElementById('tickets').value || "1",
+  payment: document.getElementById('payment').value || '',
+  paymentMethod: document.getElementById('paymentMethod').value || '',
+  song: document.getElementById('song').value.trim() || '',
+  logoBase64: null,
+  proofBase64: null
+};
+
 
   console.log("📦 Payload being sent:", payload);
 
@@ -1124,6 +1126,7 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
+
 
 
 

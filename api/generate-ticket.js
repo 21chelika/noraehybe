@@ -1,6 +1,4 @@
-// api/generate-ticket.js
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
-import { google } from "googleapis";
 
 const RESEND_API = "https://api.resend.com/emails";
 
@@ -12,49 +10,46 @@ export default async function handler(req, res) {
   }
 
   try {
-    // --- Ambil data dari frontend
     const body = typeof req.body === "string" ? JSON.parse(req.body) : req.body;
     console.log("📩 Received body:", body);
 
-    const {
-      name = "",
-      email = "",
-      wa = "",
-      social = "",
-      fandom = "",
-      tickets = "1",
-      payment = "",
-      song = "",
-    } = body;
+    const { name = "", email = "", wa = "", social = "", fandom = "", tickets = "1", payment = "", song = "" } = body;
 
-    // --- Validasi wajib
     if (!name || !email) {
-      console.log("⚠️ Missing name or email");
       return res.status(400).json({ error: "Missing name or email" });
     }
 
     const ticketCount = Math.max(1, Math.min(100, Number(tickets || 1)));
     const issuedAt = new Date().toLocaleString("id-ID", { timeZone: "Asia/Jakarta" });
 
-    // --- Buat PDF (simple version)
+    // === Buat PDF ===
     const pdfDoc = await PDFDocument.create();
-    const page = pdfDoc.addPage([595, 842]); // A4 Portrait
+    const page = pdfDoc.addPage([595, 842]);
     const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
-    page.drawText("🎫 NORAE HYBE — E-Ticket", { x: 60, y: 780, size: 20, font, color: rgb(0.2, 0.2, 0.9) });
-    page.drawText(`Nama: ${name}`, { x: 60, y: 740, size: 12, font });
-    page.drawText(`Email: ${email}`, { x: 60, y: 720, size: 12, font });
-    page.drawText(`WhatsApp: ${wa}`, { x: 60, y: 700, size: 12, font });
-    page.drawText(`Social: ${social}`, { x: 60, y: 680, size: 12, font });
-    page.drawText(`Fandom: ${fandom}`, { x: 60, y: 660, size: 12, font });
-    page.drawText(`Tickets: ${ticketCount}`, { x: 60, y: 640, size: 12, font });
-    page.drawText(`Payment: ${payment}`, { x: 60, y: 620, size: 12, font });
-    page.drawText(`Song: ${song || "-"}`, { x: 60, y: 600, size: 12, font });
-    page.drawText(`Issued at: ${issuedAt}`, { x: 60, y: 560, size: 10, font });
+
+    const lines = [
+      "NORAE HYBE — E-Ticket",
+      `Nama: ${name}`,
+      `Email: ${email}`,
+      `WhatsApp: ${wa}`,
+      `Social: ${social}`,
+      `Fandom: ${fandom}`,
+      `Tickets: ${ticketCount}`,
+      `Payment: ${payment}`,
+      `Song: ${song || "-"}`,
+      `Issued at: ${issuedAt}`,
+    ];
+
+    let y = 780;
+    for (const line of lines) {
+      page.drawText(line, { x: 60, y, size: 12, font, color: rgb(0, 0, 0) });
+      y -= 20;
+    }
 
     const pdfBytes = await pdfDoc.save();
     const pdfBase64 = Buffer.from(pdfBytes).toString("base64");
 
-    // --- Kirim Email via Resend
+    // === Kirim email ===
     const RESEND_API_KEY = process.env.RESEND_API_KEY;
     const RESEND_FROM = process.env.RESEND_FROM || "NORAEHYBE <onboarding@resend.dev>";
 
@@ -66,13 +61,17 @@ export default async function handler(req, res) {
     const emailPayload = {
       from: RESEND_FROM,
       to: [email],
-      subject: "🎫 NORAE HYBE - Your E-Ticket",
+      subject: "NORAE HYBE - Your E-Ticket",
       html: `<p>Hai ${name},</p>
              <p>Terima kasih sudah mendaftar di <b>NORAE HYBE</b>!</p>
-             <p>Tiketmu terlampir di bawah ini. 🎶</p>
+             <p>Tiketmu terlampir di bawah ini.</p>
              <p><i>Issued: ${issuedAt}</i></p>`,
       attachments: [
-        { name: `NORAEHYBE_Ticket_${name}.pdf`, type: "application/pdf", data: pdfBase64 },
+        {
+          name: `NORAEHYBE_Ticket_${name}.pdf`,
+          type: "application/pdf",
+          data: pdfBase64,
+        },
       ],
     };
 
@@ -81,7 +80,7 @@ export default async function handler(req, res) {
     const resp = await fetch(RESEND_API, {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${RESEND_API_KEY}`,
+        Authorization: `Bearer ${RESEND_API_KEY}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify(emailPayload),
@@ -95,7 +94,6 @@ export default async function handler(req, res) {
     }
 
     return res.status(200).json({ success: true, message: "E-ticket sent successfully" });
-
   } catch (err) {
     console.error("❌ API ERROR:", err);
     return res.status(500).json({ error: err.message || "Internal Server Error" });

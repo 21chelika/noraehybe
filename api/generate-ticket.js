@@ -25,7 +25,7 @@ export default async function handler(req, res) {
 
     // === ✉️ Data email dasar ===
     const RESEND_API_KEY = process.env.RESEND_API_KEY;
-    const RESEND_FROM = process.env.RESEND_FROM || "NORAEHYBE <onboarding@resend.dev>";
+    const RESEND_FROM = process.env.RESEND_FROM || "onboarding@resend.dev";
     if (!RESEND_API_KEY) {
       console.error("❌ RESEND_API_KEY missing");
       return res.status(500).json({ error: "Missing Resend API key" });
@@ -205,3 +205,4 @@ async function appendToSheet(row) {
 
   console.log("✅ Data appended to Google Sheets");
 }
+

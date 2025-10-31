@@ -14,7 +14,7 @@ export default async function handler(req, res) {
     const body = typeof req.body === "string" ? JSON.parse(req.body) : req.body;
     console.log("📩 Received body:", body);
 
-    const { name = "", email = "", wa = "", social = "", fandom = "", tickets = "1", payment = "", song = "" } = body;
+    const { name = "", email = "", wa = "", social = "", fandom = "", tickets = "1", payment = "", paymentMethod = "", song = "" } = body;
 
     if (!name || !email) {
       return res.status(400).json({ error: "Missing name or email" });
@@ -67,10 +67,12 @@ export default async function handler(req, res) {
         from: RESEND_FROM,
         to: [email],
         subject: "🎫 NORAE HYBE - E-Ticket",
-        html: `<p>Hai ${name},</p>
-               <p>Terima kasih sudah mendaftar di <b>NORAE HYBE</b>!</p>
-               <p>Tiket kamu terlampir di bawah ini 🎶</p>
-               <p><i>Issued at: ${issuedAt}</i></p>`,
+html: `<p>Hai ${name},</p>
+       <p>Terima kasih sudah melakukan pembayaran penuh untuk <b>NORAE HYBE</b>!</p>
+       <p>Kamu membayar menggunakan metode: <b>${paymentMethod}</b>.</p>
+       <p>Tiket kamu terlampir di bawah ini 🎶</p>
+       <p><i>Issued at: ${issuedAt}</i></p>`,
+
         attachments: [
           {
             name: `NORAEHYBE_Ticket_${name}.pdf`,
@@ -87,19 +89,20 @@ export default async function handler(req, res) {
         from: RESEND_FROM,
         to: [email],
         subject: "💰 NORAE HYBE - Instruksi Pembayaran DP",
-        html: `
-          <p>Halo <b>${name}</b>,</p>
-          <p>Terima kasih sudah melakukan pendaftaran untuk acara <b>NORAE HYBE</b>!</p>
-          <p>Kamu memilih opsi pembayaran <b>Down Payment (DP)</b> sebesar <b>Rp50.000</b>.</p>
-          <p>Silakan lakukan pembayaran ke rekening berikut:</p>
-          <p>🏦 <b>Blu by BCA Digital</b><br>Nomor: 001045623223<br>a.n Thia Anisyafitri</p>
-          <p>Atau via:<br>📱 ShopeePay — 081221994247 (a.n Thia Anisyafitri)</p>
-          <p>Setelah melakukan pembayaran, mohon kirim bukti transfer ke kontak berikut:<br>📞 <b>Odi — +62 895-3647-33788</b></p>
-          <p>Sisa pembayaran akan diinformasikan kemudian sebelum acara dimulai.<br>
-          Tiketmu akan dikirim <b>setelah pelunasan dilakukan</b>.</p>
-          <p>Terima kasih dan sampai jumpa di acara kami! ✨</p>
-          <p>Salam,<br>Tim NORAE HYBE</p>
-        `,
+html: `
+  <p>Halo <b>${name}</b>,</p>
+  <p>Terima kasih sudah mendaftar <b>NORAE HYBE</b>!</p>
+  <p>Kamu memilih <b>DP (Down Payment)</b> sebesar Rp50.000.</p>
+  <p>Metode pembayaran yang kamu pilih: <b>${paymentMethod}</b></p>
+  <p>Silakan lakukan pembayaran ke:</p>
+  <ul>
+    <li>Blu by BCA Digital — 001045623223 (Thia Anisyafitri)</li>
+    <li>ShopeePay / Dana — 081221994247 (Thia Anisyafitri)</li>
+  </ul>
+  <p>Setelah pembayaran, kirim bukti ke panitia (Odi – +62 895-3647-33788).</p>
+  <p>Terima kasih! ✨</p>
+`,
+
       };
     }
 
@@ -162,17 +165,19 @@ async function appendToSheet(row) {
   const sheets = google.sheets({ version: "v4", auth: jwtClient });
 
   const values = [
-    new Date().toLocaleString("id-ID", { timeZone: "Asia/Jakarta" }),
-    row.name,
-    row.email,
-    row.wa,
-    row.social,
-    row.fandom,
-    row.tickets,
-    row.payment,
-    row.song,
-    row.issuedAt,
-  ];
+  new Date().toLocaleString("id-ID", { timeZone: "Asia/Jakarta" }),
+  row.name,
+  row.email,
+  row.wa,
+  row.social,
+  row.fandom,
+  row.tickets,
+  row.payment,
+  row.paymentMethod, // 🆕 tambahkan ini
+  row.song,
+  row.issuedAt,
+];
+
 
   await sheets.spreadsheets.values.append({
     spreadsheetId: SPREADSHEET_ID,
@@ -184,5 +189,6 @@ async function appendToSheet(row) {
 
   console.log("✅ Data appended to Google Sheets");
 }
+
 
 

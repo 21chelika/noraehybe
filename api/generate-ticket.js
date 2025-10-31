@@ -105,6 +105,22 @@ html: `
 
       };
     }
+// === 📋 Jika metode pembayaran lain (Dana, Blu, ShopeePay, dsb)
+else {
+  emailPayload = {
+    from: RESEND_FROM,
+    to: [email],
+    subject: "📋 NORAE HYBE - Registration Received",
+    html: `
+      <p>Halo <b>${name}</b>,</p>
+      <p>Kami sudah menerima pendaftaran kamu untuk <b>NORAE HYBE</b>!</p>
+      <p>Kamu memilih jenis pembayaran: <b>${payment}</b></p>
+      <p>Metode pembayaran: <b>${paymentMethod}</b></p>
+      <p>Silakan tunggu konfirmasi lebih lanjut dari panitia 💬</p>
+      <p>Salam,<br>Tim NORAE HYBE</p>
+    `,
+  };
+}
 
     // === Kirim email
     const resp = await fetch(RESEND_API, {
@@ -124,17 +140,17 @@ html: `
     }
 
     await appendToSheet({
-      name,
-      email,
-      wa,
-      social,
-      fandom,
-      tickets: String(ticketCount),
-      payment,
-      song,
-      issuedAt,
-    });
-
+  name,
+  email,
+  wa,
+  social,
+  fandom,
+  tickets: String(ticketCount),
+  payment,
+  paymentMethod, 
+  song,
+  issuedAt,
+});
     return res.status(200).json({ success: true, message: "Email sent successfully" });
   } catch (err) {
     console.error("❌ API ERROR:", err);
@@ -189,6 +205,3 @@ async function appendToSheet(row) {
 
   console.log("✅ Data appended to Google Sheets");
 }
-
-
-

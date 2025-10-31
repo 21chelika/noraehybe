@@ -1,4 +1,7 @@
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
+import fs from "fs";
+import path from "path";
+import { PDFDocument, rgb } from "pdf-lib";
 
 const RESEND_API = "https://api.resend.com/emails";
 
@@ -25,7 +28,9 @@ export default async function handler(req, res) {
     // === Buat PDF ===
     const pdfDoc = await PDFDocument.create();
     const page = pdfDoc.addPage([595, 842]);
-    const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+    const fontPath = path.join(process.cwd(), "public/fonts/NotoSans-Regular.ttf");
+const fontBytes = fs.readFileSync(fontPath);
+const customFont = await pdfDoc.embedFont(fontBytes);
 
     const lines = [
       "NORAE HYBE — E-Ticket",
@@ -99,3 +104,4 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: err.message || "Internal Server Error" });
   }
 }
+

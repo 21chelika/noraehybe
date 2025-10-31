@@ -1,4 +1,4 @@
-import { PDFDocument, rgb } from "pdf-lib";
+import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 import { google } from "googleapis";
 
 const RESEND_API = "https://api.resend.com/emails";
@@ -23,69 +23,91 @@ export default async function handler(req, res) {
     const ticketCount = Math.max(1, Math.min(100, Number(tickets || 1)));
     const issuedAt = new Date().toLocaleString("id-ID", { timeZone: "Asia/Jakarta" });
 
-    // === 🧾 Buat PDF ===
-    const pdfDoc = await PDFDocument.create();
-    const page = pdfDoc.addPage([595, 842]);
-
-    // ✅ Font dari Google Fonts (tanpa upload)
-    const fontUrl = "https://github.com/google/fonts/raw/main/ofl/notosans/NotoSans-Regular.ttf";
-    const fontBytes = await fetch(fontUrl).then(res => res.arrayBuffer());
-    const font = await pdfDoc.embedFont(fontBytes);
-
-    const lines = [
-      "🎫 NORAE HYBE — E-Ticket",
-      "",
-      `Nama: ${name}`,
-      `Email: ${email}`,
-      `WhatsApp: ${wa}`,
-      `Social: ${social}`,
-      `Fandom: ${fandom}`,
-      `Jumlah Tiket: ${ticketCount}`,
-      `Payment: ${payment}`,
-      `Song Request: ${song || "-"}`,
-      "",
-      `Issued: ${issuedAt}`,
-    ];
-
-    let y = 780;
-    for (const line of lines) {
-      page.drawText(line, { x: 60, y, size: 12, font, color: rgb(0.2, 0.2, 0.2) });
-      y -= 22;
-    }
-
-    const pdfBytes = await pdfDoc.save();
-    const pdfBase64 = Buffer.from(pdfBytes).toString("base64");
-
-    // === ✉️ Kirim email via Resend ===
+    // === ✉️ Data email dasar ===
     const RESEND_API_KEY = process.env.RESEND_API_KEY;
     const RESEND_FROM = process.env.RESEND_FROM || "NORAEHYBE <onboarding@resend.dev>";
-
     if (!RESEND_API_KEY) {
       console.error("❌ RESEND_API_KEY missing");
       return res.status(500).json({ error: "Missing Resend API key" });
     }
 
-    const emailPayload = {
-      from: RESEND_FROM,
-      to: [email],
-      subject: "🎫 NORAE HYBE - E-Ticket",
-      html: `<p>Hai ${name},</p>
-             <p>Terima kasih sudah mendaftar di <b>NORAE HYBE</b>!</p>
-             <p>Tiket kamu terlampir di bawah ini 🎶</p>
-             <p><i>Issued at: ${issuedAt}</i></p>`,
-      attachments: [
-        {
-          name: `NORAEHYBE_Ticket_${name}.pdf`,
-          type: "application/pdf",
-          data: pdfBase64,
-        },
-      ],
-    };
+    let emailPayload;
 
+    // === 💰 Jika Full Payment → kirim PDF ticket
+    if (payment === "Full") {
+      const pdfDoc = await PDFDocument.create();
+      const page = pdfDoc.addPage([595, 842]);
+      const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+
+      const lines = [
+        "🎫 NORAE HYBE — E-Ticket",
+        "",
+        `Nama: ${name}`,
+        `Email: ${email}`,
+        `WhatsApp: ${wa}`,
+        `Social: ${social}`,
+        `Fandom: ${fandom}`,
+        `Jumlah Tiket: ${ticketCount}`,
+        `Payment: ${payment}`,
+        `Song Request: ${song || "-"}`,
+        "",
+        `Issued: ${issuedAt}`,
+      ];
+
+      let y = 780;
+      for (const line of lines) {
+        page.drawText(line, { x: 60, y, size: 12, font, color: rgb(0, 0, 0) });
+        y -= 22;
+      }
+
+      const pdfBytes = await pdfDoc.save();
+      const pdfBase64 = Buffer.from(pdfBytes).toString("base64");
+
+      emailPayload = {
+        from: RESEND_FROM,
+        to: [email],
+        subject: "🎫 NORAE HYBE - E-Ticket",
+        html: `<p>Hai ${name},</p>
+               <p>Terima kasih sudah mendaftar di <b>NORAE HYBE</b>!</p>
+               <p>Tiket kamu terlampir di bawah ini 🎶</p>
+               <p><i>Issued at: ${issuedAt}</i></p>`,
+        attachments: [
+          {
+            name: \`NORAEHYBE_Ticket_\${name}.pdf\`,
+            type: "application/pdf",
+            data: pdfBase64,
+          },
+        ],
+      };
+    }
+
+    // === 💵 Jika DP → kirim instruksi pembayaran
+    else if (payment === "DP") {
+      emailPayload = {
+        from: RESEND_FROM,
+        to: [email],
+        subject: "💰 NORAE HYBE - Instruksi Pembayaran DP",
+        html: `
+          <p>Halo <b>${name}</b>,</p>
+          <p>Terima kasih sudah melakukan pendaftaran untuk acara <b>NORAE HYBE</b>!</p>
+          <p>Kamu memilih opsi pembayaran <b>Down Payment (DP)</b> sebesar <b>Rp50.000</b>.</p>
+          <p>Silakan lakukan pembayaran ke rekening berikut:</p>
+          <p>🏦 <b>Blu by BCA Digital</b><br>Nomor: 001045623223<br>a.n Thia Anisyafitri</p>
+          <p>Atau via:<br>📱 ShopeePay — 081221994247 (a.n Thia Anisyafitri)</p>
+          <p>Setelah melakukan pembayaran, mohon kirim bukti transfer ke kontak berikut:<br>📞 <b>Odi — +62 895-3647-33788</b></p>
+          <p>Sisa pembayaran akan diinformasikan kemudian sebelum acara dimulai.<br>
+          Tiketmu akan dikirim <b>setelah pelunasan dilakukan</b>.</p>
+          <p>Terima kasih dan sampai jumpa di acara kami! ✨</p>
+          <p>Salam,<br>Tim NORAE HYBE</p>
+        `,
+      };
+    }
+
+    // === Kirim email
     const resp = await fetch(RESEND_API, {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${RESEND_API_KEY}`,
+        Authorization: \`Bearer \${RESEND_API_KEY}\`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify(emailPayload),
@@ -98,7 +120,7 @@ export default async function handler(req, res) {
       return res.status(500).json({ error: "Failed to send email", detail: result });
     }
 
-    // === 📊 Simpan ke Google Sheets ===
+    // === Simpan ke Google Sheets
     await appendToSheet({
       name,
       email,
@@ -111,14 +133,14 @@ export default async function handler(req, res) {
       issuedAt,
     });
 
-    return res.status(200).json({ success: true, message: "E-ticket sent successfully" });
+    return res.status(200).json({ success: true, message: "Email sent successfully" });
   } catch (err) {
     console.error("❌ API ERROR:", err);
     return res.status(500).json({ error: err.message || "Internal Server Error" });
   }
 }
 
-/* === Fungsi bantu untuk simpan ke Google Sheets === */
+/* === Google Sheets Helper === */
 async function appendToSheet(row) {
   const SPREADSHEET_ID = process.env.SPREADSHEET_ID;
   const SA_BASE64 = process.env.GOOGLE_SERVICE_ACCOUNT;

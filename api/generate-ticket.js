@@ -73,7 +73,7 @@ export default async function handler(req, res) {
                <p><i>Issued at: ${issuedAt}</i></p>`,
         attachments: [
           {
-            name: \`NORAEHYBE_Ticket_\${name}.pdf\`,
+            name: `NORAEHYBE_Ticket_${name}.pdf`,
             type: "application/pdf",
             data: pdfBase64,
           },
@@ -107,7 +107,7 @@ export default async function handler(req, res) {
     const resp = await fetch(RESEND_API, {
       method: "POST",
       headers: {
-        Authorization: \`Bearer \${RESEND_API_KEY}\`,
+        Authorization: `Bearer ${RESEND_API_KEY}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify(emailPayload),
@@ -120,7 +120,6 @@ export default async function handler(req, res) {
       return res.status(500).json({ error: "Failed to send email", detail: result });
     }
 
-    // === Simpan ke Google Sheets
     await appendToSheet({
       name,
       email,
@@ -185,4 +184,5 @@ async function appendToSheet(row) {
 
   console.log("✅ Data appended to Google Sheets");
 }
+
 

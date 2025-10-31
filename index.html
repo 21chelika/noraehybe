@@ -828,17 +828,6 @@
     });
   });
 
-  // === TOMBOL SUBMIT SEMUA DATA ===
-  submitAllBtn.addEventListener('click', (e) => {
-    e.preventDefault();
-    if (!validateAllSteps()) {
-      alert('⚠️ Ada step yang belum kamu isi dengan benar!');
-      return;
-    }
-
-    alert('✅ Semua step valid! Form siap dikirim.');
-    // TODO: Di sini kamu bisa kirim data pakai fetch() / AJAX / submit form sebenarnya
-  });
 
 const ticketInput = document.getElementById('tickets');
 const ticketInfo = document.getElementById('ticketPriceInfo');
@@ -965,7 +954,6 @@ songInput.addEventListener('input', () => {
 async function submitAllHandler(e) {
   e && e.preventDefault && e.preventDefault();
 
-  // collect values
   const payload = {
     name: document.getElementById('name').value.trim(),
     email: document.getElementById('email').value.trim(),
@@ -981,13 +969,19 @@ async function submitAllHandler(e) {
 
   console.log("📦 Payload being sent:", payload);
 
-  // convert proof file (if any) to base64
+  // Jangan kirim kalau kosong
+  if (!payload.name || !payload.email) {
+    alert("⚠️ Lengkapi nama dan email dulu sebelum submit!");
+    return;
+  }
+
+  // convert proof file ke base64
   const proofInput = document.getElementById('proof');
-  if (proofInput && proofInput.files && proofInput.files[0]) {
+  if (proofInput && proofInput.files[0]) {
     payload.proofBase64 = await fileToBase64(proofInput.files[0]);
   }
 
-  // attempt to fetch site logo (if exists at /assets/NORAEHYBE.PNG) and convert to base64
+  // fetch logo
   try {
     const logoUrl = `${location.origin}/assets/NORAEHYBE.PNG`;
     const r = await fetch(logoUrl);
@@ -996,13 +990,13 @@ async function submitAllHandler(e) {
       payload.logoBase64 = await fileToBase64(blob);
     }
   } catch (err) {
-    // ignore if logo not available
-    console.warn("logo fetch failed", err);
+    console.warn("logo fetch failed:", err);
   }
 
-  // show loading or disable button
+  // kirim data ke backend
   const btn = document.getElementById('submitAll');
-  if (btn) { btn.disabled = true; btn.textContent = 'Sending...'; }
+  btn.disabled = true;
+  btn.textContent = 'Sending...';
 
   try {
     const resp = await fetch('/api/generate-ticket', {
@@ -1011,21 +1005,24 @@ async function submitAllHandler(e) {
       body: JSON.stringify(payload)
     });
     const json = await resp.json();
+    console.log("🪶 Response:", json);
+
     if (resp.ok && json.success) {
-      alert('✅ E-ticket dikirim ke email kamu! Cek inbox (atau spam).');
-      // go to thankyou section
+      alert("✅ E-ticket berhasil dikirim! Cek email kamu.");
       document.getElementById('thankyou').scrollIntoView({ behavior: 'smooth' });
     } else {
-      console.error(json);
-      alert('❌ Gagal mengirim e-ticket. Cek console atau kontak admin.');
+      alert(`❌ Gagal mengirim e-ticket: ${json.error || "unknown error"}`);
+      console.error("Server error:", json);
     }
   } catch (err) {
-    console.error(err);
-    alert('❌ Terjadi error saat mengirim - coba lagi.');
+    console.error("❌ Network/Fetch error:", err);
+    alert("❌ Terjadi error jaringan. Coba lagi.");
   } finally {
-    if (btn) { btn.disabled = false; btn.textContent = 'Submit All'; }
+    btn.disabled = false;
+    btn.textContent = 'Submit All';
   }
 }
+
 
 // helper to convert File/Blob to dataURL (base64)
 function fileToBase64(fileOrBlob) {
@@ -1109,6 +1106,7 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
+
 
 
 

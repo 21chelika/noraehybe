@@ -49,104 +49,105 @@ export default async function handler(req, res) {
     const normalizedMethod = paymentMethod.trim().toLowerCase();
     let emailPayload;
 
-    // === 💰 FULL PAYMENT (PDF LUNAS)
-    if (normalizedPayment.includes("full")) {
-      const pdfDoc = await PDFDocument.create();
-      const page = pdfDoc.addPage([595, 842]);
-      const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+    // === 💰 Jika Full Payment → kirim PDF ticket (LUNAS)
+if (payment.toLowerCase().includes("full")) {
+  const pdfDoc = await PDFDocument.create();
+  const page = pdfDoc.addPage([595, 842]);
+  const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
 
-      const lines = [
-        "🎫 NORAE HYBE — E-Ticket",
-        "",
-        `Nama: ${name}`,
-        `Email: ${email}`,
-        `WhatsApp: ${wa}`,
-        `Social: ${social}`,
-        `Fandom: ${fandom}`,
-        `Jumlah Tiket: ${ticketCount}`,
-        `Status Pembayaran: LUNAS ✅`,
-        `Metode Pembayaran: ${paymentMethod}`,
-        "",
-        `Song Request: ${song || "-"}`,
-        `Issued: ${issuedAt}`,
-      ];
+  const lines = [
+    "🎫 NORAE HYBE — E-Ticket",
+    "",
+    `Nama: ${name}`,
+    `Email: ${email}`,
+    `WhatsApp: ${wa}`,
+    `Social: ${social}`,
+    `Fandom: ${fandom}`,
+    `Jumlah Tiket: ${ticketCount}`,
+    `Status Pembayaran: LUNAS ✅`,
+    `Metode Pembayaran: ${paymentMethod}`,
+    "",
+    `Song Request: ${song || "-"}`,
+    "",
+    `Issued: ${issuedAt}`,
+  ];
 
-      let y = 780;
-      for (const line of lines) {
-        page.drawText(line, { x: 60, y, size: 12, font, color: rgb(0, 0, 0) });
-        y -= 22;
-      }
+  let y = 780;
+  for (const line of lines) {
+    page.drawText(line, { x: 60, y, size: 12, font, color: rgb(0, 0, 0) });
+    y -= 22;
+  }
 
-      const pdfBytes = await pdfDoc.save();
-      const pdfBase64 = Buffer.from(pdfBytes).toString("base64");
+  const pdfBytes = await pdfDoc.save();
+  const pdfBase64 = Buffer.from(pdfBytes).toString("base64");
 
-      emailPayload = {
-        from: RESEND_FROM,
-        to: [email],
-        subject: "🎫 NORAE HYBE - E-Ticket (LUNAS)",
-        html: `
-          <p>Hai ${name},</p>
-          <p>Terima kasih sudah melakukan <b>pembayaran penuh (Full Payment)</b> untuk <b>NORAE HYBE</b>!</p>
-          <p>Pembayaran kamu via <b>${paymentMethod}</b> telah kami terima.</p>
-          <p>Tiket kamu terlampir di bawah ini 🎶</p>
-          <p><i>Issued at: ${issuedAt}</i></p>
-        `,
-        attachments: [
-          {
-            name: `NORAEHYBE_Ticket_${name}.pdf`,
-            type: "application/pdf",
-            data: pdfBase64,
-          },
-        ],
-      };
-    }
+  emailPayload = {
+    from: RESEND_FROM,
+    to: [email],
+    subject: "🎫 NORAE HYBE - E-Ticket (LUNAS)",
+    html: `
+      <p>Hai ${name},</p>
+      <p>Terima kasih sudah melakukan <b>pembayaran penuh (Full Payment)</b> untuk <b>NORAE HYBE</b>!</p>
+      <p>Pembayaran kamu dilakukan melalui: <b>${paymentMethod}</b>.</p>
+      <p>Tiket kamu terlampir di bawah ini 🎶</p>
+      <p><i>Issued at: ${issuedAt}</i></p>
+    `,
+    attachments: [
+      {
+        name: `NORAEHYBE_Ticket_${name}.pdf`,
+        type: "application/pdf",
+        data: pdfBase64,
+      },
+    ],
+  };
+}
 
-    // === 💵 DP (Down Payment)
-    else if (normalizedPayment.includes("dp")) {
-      let targetText = "";
-      if (normalizedMethod.includes("blu")) {
-        targetText = "Blu by BCA Digital — 001045623223 (Thia Anisyafitri)";
-      } else if (normalizedMethod.includes("shopee")) {
-        targetText = "ShopeePay — 081221994247 (Thia Anisyafitri)";
-      } else if (normalizedMethod.includes("dana")) {
-        targetText = "DANA — 081221994247 (Thia Anisyafitri)";
-      } else {
-        targetText = "Hubungi panitia untuk detail rekening pembayaran.";
-      }
+// === 💵 Jika DP (Down Payment) → kirim instruksi pembayaran
+else if (payment.toLowerCase().includes("dp")) {
+  let rekening = "";
+  if (paymentMethod.toLowerCase().includes("blu")) {
+    rekening = "Blu by BCA Digital — 001045623223 (Thia Anisyafitri)";
+  } else if (paymentMethod.toLowerCase().includes("shopee")) {
+    rekening = "ShopeePay — 081221994247 (Thia Anisyafitri)";
+  } else if (paymentMethod.toLowerCase().includes("dana")) {
+    rekening = "DANA — 081221994247 (Thia Anisyafitri)";
+  } else {
+    rekening = "Hubungi panitia untuk detail rekening pembayaran.";
+  }
 
-      emailPayload = {
-        from: RESEND_FROM,
-        to: [email],
-        subject: "💰 NORAE HYBE - Instruksi Pembayaran DP",
-        html: `
-          <p>Halo <b>${name}</b>,</p>
-          <p>Terima kasih sudah mendaftar <b>NORAE HYBE</b>!</p>
-          <p>Kamu memilih <b>DP (Down Payment)</b> sebesar Rp50.000.</p>
-          <p>Metode pembayaran: <b>${paymentMethod}</b></p>
-          <p>Silakan lakukan pembayaran ke:</p>
-          <ul><li>${targetText}</li></ul>
-          <p>Setelah pembayaran, kirim bukti ke panitia (Odi – +62 895-3647-33788).</p>
-          <p>Terima kasih! ✨</p>
-        `,
-      };
-    }
+  emailPayload = {
+    from: RESEND_FROM,
+    to: [email],
+    subject: "💰 NORAE HYBE - Instruksi Pembayaran DP",
+    html: `
+      <p>Halo <b>${name}</b>,</p>
+      <p>Terima kasih sudah mendaftar <b>NORAE HYBE</b>!</p>
+      <p>Kamu memilih <b>DP (Down Payment)</b> sebesar Rp50.000.</p>
+      <p>Metode pembayaran yang kamu pilih: <b>${paymentMethod}</b></p>
+      <p>Silakan lakukan pembayaran ke rekening berikut:</p>
+      <ul><li>${rekening}</li></ul>
+      <p>Setelah melakukan pembayaran, kirim bukti transfer ke panitia (Odi – +62 895-3647-33788).</p>
+      <p>Terima kasih! ✨</p>
+    `,
+  };
+}
 
-    // === 📋 Fallback (lainnya)
-    else {
-      emailPayload = {
-        from: RESEND_FROM,
-        to: [email],
-        subject: "📋 NORAE HYBE - Registration Received",
-        html: `
-          <p>Halo <b>${name}</b>,</p>
-          <p>Kami sudah menerima pendaftaran kamu untuk <b>NORAE HYBE</b>!</p>
-          <p>Jenis pembayaran: <b>${payment}</b></p>
-          <p>Metode: <b>${paymentMethod}</b></p>
-          <p>Silakan tunggu konfirmasi lebih lanjut 💬</p>
-          <p>Salam,<br>Tim NORAE HYBE</p>
-        `,
-      };
-    }
+// === 📋 Jika belum memilih atau data tidak sesuai
+else {
+  emailPayload = {
+    from: RESEND_FROM,
+    to: [email],
+    subject: "📋 NORAE HYBE - Registration Received",
+    html: `
+      <p>Halo <b>${name}</b>,</p>
+      <p>Kami sudah menerima pendaftaran kamu untuk <b>NORAE HYBE</b>!</p>
+      <p>Jenis pembayaran: <b>${payment}</b></p>
+      <p>Metode pembayaran: <b>${paymentMethod}</b></p>
+      <p>Silakan tunggu konfirmasi lebih lanjut dari panitia 💬</p>
+      <p>Salam,<br>Tim NORAE HYBE</p>
+    `,
+  };
+}
 
     // === Upload Bukti ke imgbb (kalau ada)
     let proofUrl = null;
@@ -283,4 +284,5 @@ async function appendToSheet(row) {
 
   console.log("✅ Data appended to Google Sheets");
 }
+
 

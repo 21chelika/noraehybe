@@ -32,122 +32,119 @@ export default async function handler(req, res) {
     }
 
     const ticketCount = Math.max(1, Math.min(100, Number(tickets || 1)));
-    const issuedAt = new Date().toLocaleString("id-ID", {
-      timeZone: "Asia/Jakarta",
-    });
+    const issuedAt = new Date().toLocaleString("id-ID", { timeZone: "Asia/Jakarta" });
 
     const RESEND_API_KEY = process.env.RESEND_API_KEY;
-    const RESEND_FROM =
-      process.env.RESEND_FROM || "NORAEHYBE <noreply@noraehybe.my.id>";
+    const RESEND_FROM = process.env.RESEND_FROM || "NORAEHYBE <noreply@noraehybe.my.id>";
 
     if (!RESEND_API_KEY) {
       console.error("❌ RESEND_API_KEY missing");
       return res.status(500).json({ error: "Missing Resend API key" });
     }
 
-    const normalizedPayment = payment.trim().toLowerCase();
-    const normalizedMethod = paymentMethod.trim().toLowerCase();
+    const pay = payment.trim().toLowerCase();
+    const method = paymentMethod.trim().toLowerCase();
     let emailPayload;
 
-    // === 💰 Jika Full Payment → kirim PDF ticket (LUNAS)
-if (payment.toLowerCase().includes("full")) {
-  const pdfDoc = await PDFDocument.create();
-  const page = pdfDoc.addPage([595, 842]);
-  const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+    // =========================
+    // === CASE 1: FULL PAYMENT
+    // =========================
+    if (pay.includes("full") || pay.includes("lunas")) {
+      const pdfDoc = await PDFDocument.create();
+      const page = pdfDoc.addPage([595, 842]);
+      const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
 
-  const lines = [
-    "🎫 NORAE HYBE — E-Ticket",
-    "",
-    `Nama: ${name}`,
-    `Email: ${email}`,
-    `WhatsApp: ${wa}`,
-    `Social: ${social}`,
-    `Fandom: ${fandom}`,
-    `Jumlah Tiket: ${ticketCount}`,
-    `Status Pembayaran: LUNAS ✅`,
-    `Metode Pembayaran: ${paymentMethod}`,
-    "",
-    `Song Request: ${song || "-"}`,
-    "",
-    `Issued: ${issuedAt}`,
-  ];
+      const lines = [
+        "🎫 NORAE HYBE — E-Ticket",
+        "",
+        `Nama: ${name}`,
+        `Email: ${email}`,
+        `WhatsApp: ${wa}`,
+        `Social: ${social}`,
+        `Fandom: ${fandom}`,
+        `Jumlah Tiket: ${ticketCount}`,
+        `Status Pembayaran: LUNAS ✅`,
+        `Metode Pembayaran: ${paymentMethod}`,
+        "",
+        `Song Request: ${song || "-"}`,
+        `Issued: ${issuedAt}`,
+      ];
 
-  let y = 780;
-  for (const line of lines) {
-    page.drawText(line, { x: 60, y, size: 12, font, color: rgb(0, 0, 0) });
-    y -= 22;
-  }
+      let y = 780;
+      for (const line of lines) {
+        page.drawText(line, { x: 60, y, size: 12, font, color: rgb(0, 0, 0) });
+        y -= 22;
+      }
 
-  const pdfBytes = await pdfDoc.save();
-  const pdfBase64 = Buffer.from(pdfBytes).toString("base64");
+      const pdfBytes = await pdfDoc.save();
+      const pdfBase64 = Buffer.from(pdfBytes).toString("base64");
 
-  emailPayload = {
-    from: RESEND_FROM,
-    to: [email],
-    subject: "🎫 NORAE HYBE - E-Ticket (LUNAS)",
-    html: `
-      <p>Hai ${name},</p>
-      <p>Terima kasih sudah melakukan <b>pembayaran penuh (Full Payment)</b> untuk <b>NORAE HYBE</b>!</p>
-      <p>Pembayaran kamu dilakukan melalui: <b>${paymentMethod}</b>.</p>
-      <p>Tiket kamu terlampir di bawah ini 🎶</p>
-      <p><i>Issued at: ${issuedAt}</i></p>
-    `,
-    attachments: [
-      {
-        name: `NORAEHYBE_Ticket_${name}.pdf`,
-        type: "application/pdf",
-        data: pdfBase64,
-      },
-    ],
-  };
-}
+      emailPayload = {
+        from: RESEND_FROM,
+        to: [email],
+        subject: "🎫 NORAE HYBE - E-Ticket (LUNAS)",
+        html: `
+          <p>Hai ${name},</p>
+          <p>Terima kasih sudah melakukan <b>Full Payment</b> untuk <b>NORAE HYBE</b>!</p>
+          <p>Pembayaran kamu melalui: <b>${paymentMethod}</b>.</p>
+          <p>Tiket kamu terlampir di bawah ini 🎶</p>
+          <p><i>Issued at: ${issuedAt}</i></p>
+        `,
+        attachments: [
+          {
+            name: \`NORAEHYBE_Ticket_${name}.pdf\`,
+            type: "application/pdf",
+            data: pdfBase64,
+          },
+        ],
+      };
+    }
 
-// === 💵 Jika DP (Down Payment) → kirim instruksi pembayaran
-else if (payment.toLowerCase().includes("dp")) {
-  let rekening = "";
-  if (paymentMethod.toLowerCase().includes("blu")) {
-    rekening = "Blu by BCA Digital — 001045623223 (Thia Anisyafitri)";
-  } else if (paymentMethod.toLowerCase().includes("shopee")) {
-    rekening = "ShopeePay — 081221994247 (Thia Anisyafitri)";
-  } else if (paymentMethod.toLowerCase().includes("dana")) {
-    rekening = "DANA — 081221994247 (Thia Anisyafitri)";
-  } else {
-    rekening = "Hubungi panitia untuk detail rekening pembayaran.";
-  }
+    // =========================
+    // === CASE 2: DP PAYMENT
+    // =========================
+    else if (pay.includes("dp") || pay.includes("down")) {
+      let rekening = "";
+      if (method.includes("blu")) rekening = "Blu by BCA Digital — 001045623223 (Thia Anisyafitri)";
+      else if (method.includes("shopee")) rekening = "ShopeePay — 081221994247 (Thia Anisyafitri)";
+      else if (method.includes("dana")) rekening = "DANA — 081221994247 (Thia Anisyafitri)";
+      else rekening = "Hubungi panitia untuk detail rekening pembayaran.";
 
-  emailPayload = {
-    from: RESEND_FROM,
-    to: [email],
-    subject: "💰 NORAE HYBE - Instruksi Pembayaran DP",
-    html: `
-      <p>Halo <b>${name}</b>,</p>
-      <p>Terima kasih sudah mendaftar <b>NORAE HYBE</b>!</p>
-      <p>Kamu memilih <b>DP (Down Payment)</b> sebesar Rp50.000.</p>
-      <p>Metode pembayaran yang kamu pilih: <b>${paymentMethod}</b></p>
-      <p>Silakan lakukan pembayaran ke rekening berikut:</p>
-      <ul><li>${rekening}</li></ul>
-      <p>Setelah melakukan pembayaran, kirim bukti transfer ke panitia (Odi – +62 895-3647-33788).</p>
-      <p>Terima kasih! ✨</p>
-    `,
-  };
-}
+      emailPayload = {
+        from: RESEND_FROM,
+        to: [email],
+        subject: "💰 NORAE HYBE - Instruksi Pembayaran DP",
+        html: `
+          <p>Halo <b>${name}</b>,</p>
+          <p>Terima kasih sudah mendaftar <b>NORAE HYBE</b>!</p>
+          <p>Kamu memilih <b>DP (Down Payment)</b> sebesar Rp50.000.</p>
+          <p>Metode pembayaran: <b>${paymentMethod}</b></p>
+          <p>Silakan lakukan pembayaran ke:</p>
+          <ul><li>${rekening}</li></ul>
+          <p>Setelah pembayaran, kirim bukti ke panitia (Odi – +62 895-3647-33788).</p>
+          <p>Terima kasih! ✨</p>
+        `,
+      };
+    }
 
-// === 📋 Jika belum memilih atau data tidak sesuai
-else {
-  emailPayload = {
-    from: RESEND_FROM,
-    to: [email],
-    subject: "📋 NORAE HYBE - Registration Received",
-    html: `
-      <p>Halo <b>${name}</b>,</p>
-      <p>Kami sudah menerima pendaftaran kamu untuk <b>NORAE HYBE</b>!</p>
-      <p>Jenis pembayaran: <b>${payment}</b></p>
-      <p>Metode pembayaran: <b>${paymentMethod}</b></p>
-      <p>Silakan tunggu konfirmasi lebih lanjut dari panitia 💬</p>
-      <p>Salam,<br>Tim NORAE HYBE</p>
-    `,
-  };
-}
+    // =========================
+    // === CASE 3: DEFAULT / ERROR
+    // =========================
+    else {
+      emailPayload = {
+        from: RESEND_FROM,
+        to: [email],
+        subject: "📋 NORAE HYBE - Registration Received",
+        html: `
+          <p>Halo <b>${name}</b>,</p>
+          <p>Kami sudah menerima pendaftaran kamu untuk <b>NORAE HYBE</b>!</p>
+          <p>Jenis pembayaran: <b>${payment}</b></p>
+          <p>Metode pembayaran: <b>${paymentMethod}</b></p>
+          <p>Silakan tunggu konfirmasi lebih lanjut 💬</p>
+          <p>Salam,<br>Tim NORAE HYBE</p>
+        `,
+      };
+    }
 
     // === Upload Bukti ke imgbb (kalau ada)
     let proofUrl = null;
@@ -159,7 +156,7 @@ else {
     const resp = await fetch(RESEND_API, {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${RESEND_API_KEY}`,
+        Authorization: \`Bearer ${RESEND_API_KEY}\`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify(emailPayload),
@@ -169,9 +166,7 @@ else {
     console.log("📧 Resend response:", result);
 
     if (!resp.ok) {
-      return res
-        .status(500)
-        .json({ error: "Failed to send email", detail: result });
+      return res.status(500).json({ error: "Failed to send email", detail: result });
     }
 
     // === Simpan ke Google Sheet
@@ -189,14 +184,10 @@ else {
       proofUrl,
     });
 
-    return res
-      .status(200)
-      .json({ success: true, message: "Email sent successfully" });
+    return res.status(200).json({ success: true, message: "Email sent successfully" });
   } catch (err) {
     console.error("❌ API ERROR:", err);
-    return res
-      .status(500)
-      .json({ error: err.message || "Internal Server Error" });
+    return res.status(500).json({ error: err.message || "Internal Server Error" });
   }
 }
 
@@ -204,15 +195,9 @@ else {
 async function uploadToImgbb(base64Image) {
   try {
     const apiKey = process.env.IMGBB_API_KEY;
-    if (!apiKey) {
-      console.error("❌ IMGBB_API_KEY missing");
-      return null;
-    }
+    if (!apiKey) return null;
 
-    if (!base64Image || !base64Image.startsWith("data:image")) {
-      console.warn("⚠️ No valid base64 image provided");
-      return null;
-    }
+    if (!base64Image || !base64Image.startsWith("data:image")) return null;
 
     const form = new FormData();
     form.append("image", base64Image.split(",")[1]);
@@ -223,15 +208,8 @@ async function uploadToImgbb(base64Image) {
     });
 
     const data = await resp.json();
-    if (data?.data?.url) {
-      console.log("✅ Bukti pembayaran terupload:", data.data.url);
-      return data.data.url;
-    } else {
-      console.error("❌ Upload ke imgbb gagal:", data);
-      return null;
-    }
-  } catch (err) {
-    console.error("❌ Upload error:", err);
+    return data?.data?.url || null;
+  } catch {
     return null;
   }
 }
@@ -241,14 +219,10 @@ async function appendToSheet(row) {
   const SPREADSHEET_ID = process.env.SPREADSHEET_ID;
   const SA_BASE64 = process.env.GOOGLE_SERVICE_ACCOUNT;
 
-  if (!SPREADSHEET_ID || !SA_BASE64) {
-    console.warn("⚠️ Sheets env missing, skip append");
-    return;
-  }
+  if (!SPREADSHEET_ID || !SA_BASE64) return;
 
   const saJson = JSON.parse(Buffer.from(SA_BASE64, "base64").toString("utf8"));
-  if (saJson.private_key)
-    saJson.private_key = saJson.private_key.replace(/\\n/g, "\n");
+  if (saJson.private_key) saJson.private_key = saJson.private_key.replace(/\\n/g, "\n");
 
   const jwtClient = new google.auth.JWT({
     email: saJson.client_email,
@@ -284,5 +258,3 @@ async function appendToSheet(row) {
 
   console.log("✅ Data appended to Google Sheets");
 }
-
-

@@ -139,10 +139,10 @@ export default async function handler(req, res) {
         subject: "📋 NORAE HYBE - Registration Received",
         html: `
           <p>Halo <b>${name}</b>,</p>
-          <p>Kami sudah menerima pendaftaran kamu untuk <b>NORAE HYBE</b>!</p>
-          <p>Jenis pembayaran: <b>${payment}</b></p>
-          <p>Metode: <b>${paymentMethod}</b></p>
-          <p>Silakan tunggu konfirmasi lebih lanjut 💬</p>
+          <p>Kami sudah menerima pendaftaran <b>NORAE HYBE</b>!</p>
+          <p>Namun PDF E-ticket belum terkirim?</b></p>
+          <p>Hubungi: ODI (wa: +62 895-3647-33788)</b></p>
+          <p>Dan silakan tunggu konfirmasi lebih lanjut 💬</p>
           <p>Salam,<br>Tim NORAE HYBE</p>
         `,
       };
@@ -283,3 +283,4 @@ async function appendToSheet(row) {
 
   console.log("✅ Data appended to Google Sheets");
 }
+

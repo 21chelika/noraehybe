@@ -156,7 +156,7 @@ export default async function handler(req, res) {
     const resp = await fetch(RESEND_API, {
       method: "POST",
       headers: {
-        Authorization: 'Bearer ${RESEND_API_KEY}',
+        Authorization: "Bearer " + RESEND_API_KEY,
         "Content-Type": "application/json",
       },
       body: JSON.stringify(emailPayload),
@@ -258,4 +258,5 @@ async function appendToSheet(row) {
 
   console.log("✅ Data appended to Google Sheets");
 }
+
 

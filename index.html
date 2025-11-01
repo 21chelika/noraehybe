@@ -916,7 +916,7 @@ handleInputValidation('wa', 'btn-3', v => v.trim().length >= 8);
 handleInputValidation('social', 'btn-4', v => v.trim().length > 0);
 handleInputValidation('fandom', 'btn-5', v => v.trim().length > 0);
 handleInputValidation('tickets', 'btn-6', v => v >= 1 && v <= 100);
-handleInputValidation('song', 'btn-10', v => v.trim().length > 0);
+handleInputValidation('song', 'submitAll', v => v.trim().length > 0);
 
 /* Payment step */
 document.querySelectorAll('.pay-option').forEach(opt => {
@@ -1126,6 +1126,7 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
+
 
 
 

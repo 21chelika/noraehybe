@@ -156,7 +156,7 @@ export default async function handler(req, res) {
     const resp = await fetch(RESEND_API, {
       method: "POST",
       headers: {
-        Authorization: \`Bearer ${RESEND_API_KEY}\`,
+        Authorization: 'Bearer ${RESEND_API_KEY}',
         "Content-Type": "application/json",
       },
       body: JSON.stringify(emailPayload),
@@ -202,10 +202,10 @@ async function uploadToImgbb(base64Image) {
     const form = new FormData();
     form.append("image", base64Image.split(",")[1]);
 
-    const resp = await fetch(`https://api.imgbb.com/1/upload?key=${apiKey}`, {
-      method: "POST",
-      body: form,
-    });
+const resp = await fetch('https://api.imgbb.com/1/upload?key=${apiKey}', {
+  method: "POST",
+  body: form,
+});
 
     const data = await resp.json();
     return data?.data?.url || null;
@@ -258,5 +258,4 @@ async function appendToSheet(row) {
 
   console.log("✅ Data appended to Google Sheets");
 }
-
 

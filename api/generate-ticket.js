@@ -92,7 +92,7 @@ export default async function handler(req, res) {
         `,
         attachments: [
           {
-            name: \`NORAEHYBE_Ticket_${name}.pdf\`,
+            name: `NORAEHYBE_Ticket_${name}.pdf`,
             type: "application/pdf",
             data: pdfBase64,
           },
@@ -258,3 +258,4 @@ async function appendToSheet(row) {
 
   console.log("✅ Data appended to Google Sheets");
 }
+

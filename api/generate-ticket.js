@@ -58,14 +58,12 @@ export default async function handler(req, res) {
     }
 
     // FIX 1: Hapus karakter non-ASCII/tersembunyi dari input
-    const cleanString = (str) => String(str).replace(/[\u0080-\uFFFF]/g, "").trim();
-    
-    const name = cleanString(rawName);
-    const email = cleanString(rawEmail);
-    const wa = cleanString(rawWa);
-    const social = cleanString(rawSocial);
-    const fandom = cleanString(rawFandom);
-    const song = cleanString(rawSong);
+    const name = String(rawName).trim();
+    const email = String(rawEmail).trim();
+    const wa = String(rawWa).trim();
+    const social = String(rawSocial).trim();
+    const fandom = String(rawFandom).trim();
+    const song = String(rawSong).trim();
 
     const ticketCount = Math.max(1, Math.min(100, Number(tickets || 1)));
     
@@ -279,6 +277,7 @@ async function uploadToImgbb(base64Image) {
     return null;
   }
 }
+
 
 
 

@@ -918,13 +918,25 @@ handleInputValidation('fandom', 'btn-5', v => v.trim().length > 0);
 handleInputValidation('tickets', 'btn-6', v => v >= 1 && v <= 100);
 handleInputValidation('song', 'submitAll', v => v.trim().length > 0);
 
-/* Payment step */
-document.querySelectorAll('.pay-option').forEach(opt => {
+// GANTIKAN LOGIKA LAMA ANDA DENGAN BLOK INI (di bagian tengah skrip)
+
+/* Payment step (Step 7) - Targetkan #payGrid */
+document.querySelectorAll('#payGrid .pay-option').forEach(opt => {
   opt.addEventListener('click', () => {
-    document.querySelectorAll('.pay-option').forEach(o => o.classList.remove('selected'));
+    document.querySelectorAll('#payGrid .pay-option').forEach(o => o.classList.remove('selected'));
     opt.classList.add('selected');
     document.getElementById('payment').value = opt.dataset.value;
     document.getElementById('btn-7').disabled = false;
+  });
+});
+
+/* Payment Method step (Step 8) - Targetkan #payGridMethod */
+document.querySelectorAll('#payGridMethod .pay-option').forEach(opt => {
+  opt.addEventListener('click', () => {
+    document.querySelectorAll('#payGridMethod .pay-option').forEach(o => o.classList.remove('selected'));
+    opt.classList.add('selected');
+    document.getElementById('paymentMethod').value = opt.dataset.value;
+    document.getElementById('btn-8').disabled = false;
   });
 });
 
@@ -1102,28 +1114,6 @@ setInterval(() => {
   }
 }, 1000);
 
-// === STEP 7: Pilih jenis pembayaran (DP / Full Payment)
-document.querySelectorAll("#payGrid .pay-option").forEach(opt => {
-  opt.addEventListener("click", () => {
-    document.querySelectorAll("#payGrid .pay-option").forEach(o => o.classList.remove("selected"));
-    opt.classList.add("selected");
-    document.getElementById("payment").value = opt.dataset.value;
-    console.log("✅ Jenis pembayaran:", opt.dataset.value);
-    document.getElementById("btn-7").disabled = false;
-  });
-});
-
-// === STEP 8: Pilih metode pembayaran (Blu / ShopeePay / Dana)
-document.querySelectorAll("#payGridMethod .pay-option").forEach(opt => {
-  opt.addEventListener("click", () => {
-    document.querySelectorAll("#payGridMethod .pay-option").forEach(o => o.classList.remove("selected"));
-    opt.classList.add("selected");
-    document.getElementById("paymentMethod").value = opt.dataset.value;
-    console.log("✅ Metode pembayaran:", opt.dataset.value);
-    document.getElementById("btn-8").disabled = false;
-  });
-});
-
 
 </script>
 <script>
@@ -1139,6 +1129,7 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
+
 
 
 

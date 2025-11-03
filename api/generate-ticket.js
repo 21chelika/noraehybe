@@ -56,7 +56,7 @@ export default async function handler(req, res) {
       const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
 
       const lines = [
-        "🎫 NORAE HYBE — E-Ticket",
+        "NORAE HYBE — E-Ticket",
         "",
         `Nama: ${name}`,
         `Email: ${email}`,
@@ -64,7 +64,7 @@ export default async function handler(req, res) {
         `Social: ${social}`,
         `Fandom: ${fandom}`,
         `Jumlah Tiket: ${ticketCount}`,
-        `Status Pembayaran: LUNAS ✅`,
+        `Status Pembayaran: LUNAS `,
         `Metode Pembayaran: ${paymentMethod}`,
         "",
         `Song Request: ${song || "-"}`,
@@ -83,12 +83,12 @@ export default async function handler(req, res) {
       emailPayload = {
         from: RESEND_FROM,
         to: [email],
-        subject: "🎫 NORAE HYBE - E-Ticket (LUNAS)",
+        subject: " NORAE HYBE - E-Ticket (LUNAS)",
         html: `
           <p>Hai ${name},</p>
           <p>Terima kasih sudah melakukan <b>pembayaran penuh (Full Payment)</b> untuk <b>NORAE HYBE</b>!</p>
           <p>Pembayaran kamu via <b>${paymentMethod}</b> telah kami terima.</p>
-          <p>Tiket kamu terlampir di bawah ini 🎶</p>
+          <p>Tiket kamu terlampir di bawah ini </p>
           <p><i>Issued at: ${issuedAt}</i></p>
         `,
         attachments: [
@@ -117,7 +117,7 @@ export default async function handler(req, res) {
       emailPayload = {
         from: RESEND_FROM,
         to: [email],
-        subject: "💰 NORAE HYBE - Instruksi Pembayaran DP",
+        subject: "NORAE HYBE - Instruksi Pembayaran DP",
         html: `
           <p>Halo <b>${name}</b>,</p>
           <p>Terima kasih sudah mendaftar <b>NORAE HYBE</b>!</p>
@@ -126,7 +126,7 @@ export default async function handler(req, res) {
           <p>Silakan lakukan pembayaran ke:</p>
           <ul><li>${targetText}</li></ul>
           <p>Setelah pembayaran, kirim bukti ke panitia (Odi – +62 895-3647-33788).</p>
-          <p>Terima kasih! ✨</p>
+          <p>Terima kasih! </p>
         `,
       };
     }
@@ -287,5 +287,6 @@ async function appendToSheet(row) {
 
   console.log("✅ Data appended to Google Sheets");
 }
+
 
 

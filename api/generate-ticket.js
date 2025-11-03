@@ -1,10 +1,36 @@
 import { PDFDocument, rgb } from "pdf-lib";
-import { google } from "googleapis";
 
 const RESEND_API = "https://api.resend.com/emails";
 
 // ⭐ IMPORT FONT BASE64 DARI FILE TERPISAH
 import { MONTSERRAT_FONT_BASE64 } from "./montserrat-regular-base64.js";
+
+/* === Sheets Helper (RINGAN) === */
+async function appendToSheet(row) {
+  const SHEET_WEB_APP_URL = process.env.SHEET_WEB_APP_URL;
+
+  if (!SHEET_WEB_APP_URL) {
+    console.warn("⚠️ SHEET_WEB_APP_URL env missing, skip append");
+    return;
+  }
+  
+  try {
+    const response = await fetch(SHEET_WEB_APP_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(row),
+    });
+
+    const data = await response.json();
+    if (data.status === 'success') {
+      console.log("✅ Data berhasil direkap ke Sheets (via Apps Script).");
+    } else {
+      console.error("❌ Gagal rekap data ke Sheets:", data.message);
+    }
+  } catch (error) {
+    console.error("❌ Error saat menghubungi Google Apps Script:", error);
+  }
+}
 
 export default async function handler(req, res) {
   console.log("🔥 [generate-ticket] API HIT");
@@ -259,52 +285,4 @@ async function uploadToImgbb(base64Image) {
   }
 }
 
-/* === Google Sheets Helper === */
-async function appendToSheet(row) {
-  const SPREADSHEET_ID = process.env.SPREADSHEET_ID;
-  const SA_BASE64 = process.env.GOOGLE_SERVICE_ACCOUNT;
-
-  if (!SPREADSHEET_ID || !SA_BASE64) {
-    console.warn("⚠️ Sheets env missing, skip append");
-    return;
-  }
-
-  const saJson = JSON.parse(Buffer.from(SA_BASE64, "base64").toString("utf8"));
-  if (saJson.private_key)
-    saJson.private_key = saJson.private_key.replace(/\\n/g, "\n");
-
-  const jwtClient = new google.auth.JWT({
-    email: saJson.client_email,
-    key: saJson.private_key,
-    scopes: ["https://www.googleapis.com/auth/spreadsheets"],
-  });
-
-  await jwtClient.authorize();
-  const sheets = google.sheets({ version: "v4", auth: jwtClient });
-
-  const values = [
-    new Date().toLocaleString("id-ID", { timeZone: "Asia/Jakarta" }),
-    row.name,
-    row.email,
-    row.wa,
-    row.social,
-    row.fandom,
-    row.tickets,
-    row.payment,
-    row.paymentMethod,
-    row.song,
-    row.issuedAt,
-    row.proofUrl || "-",
-  ];
-
-  await sheets.spreadsheets.values.append({
-    spreadsheetId: SPREADSHEET_ID,
-    range: "Sheet1!A1",
-    valueInputOption: "RAW",
-    insertDataOption: "INSERT_ROWS",
-    resource: { values: [values] },
-  });
-
-  console.log("✅ Data appended to Google Sheets");
-}
 

@@ -234,8 +234,8 @@ export default async function handler(req, res) {
       payment,
       paymentMethod,
       song,
-      issuedAt,
-      proofUrl,
+      timestamp: issuedAt, // Mengirim issuedAt dengan nama key 'timestamp'
+      proofLink: proofUrl, // Mengirim proofUrl dengan nama key 'proofLink'
     });
 
     return res
@@ -284,5 +284,6 @@ async function uploadToImgbb(base64Image) {
     return null;
   }
 }
+
 
 

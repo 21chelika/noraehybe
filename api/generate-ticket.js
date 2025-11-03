@@ -53,7 +53,8 @@ export default async function handler(req, res) {
     if (normalizedPayment.includes("full")) {
       const pdfDoc = await PDFDocument.create();
       const page = pdfDoc.addPage([595, 842]);
-      const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+      // ⭐ PERBAIKAN FONT: Gunakan TimesRoman untuk encoding yang lebih aman
+      const font = await pdfDoc.embedFont(StandardFonts.TimesRoman);
 
       // --- PERBAIKAN UTAMA DI SINI: HAPUS EMOJI DARI TEKS PDF
       const lines = [
@@ -288,4 +289,5 @@ async function appendToSheet(row) {
 
   console.log("✅ Data appended to Google Sheets");
 }
+
 

@@ -4,8 +4,9 @@
   "type": "module",
   "dependencies": {
     "pdf-lib": "^1.17.1",
-    "next": "Versi-Terbaru-Anda"
+    "next": "13.5.11"
     }
 }
+
 
 

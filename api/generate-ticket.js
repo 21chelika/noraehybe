@@ -1,182 +1,193 @@
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
+// ⭐ FIX 1: Pastikan StandardFonts di-import jika Anda menggunakannya.
+// Baris import di kode Anda sebelumnya sudah benar, pastikan tidak berubah.
 
 const RESEND_API = "https://api.resend.com/emails";
 
 /* === Sheets Helper (RINGAN) === */
 async function appendToSheet(row) {
-  const SHEET_WEB_APP_URL = process.env.SHEET_WEB_APP_URL;
+    const SHEET_WEB_APP_URL = process.env.SHEET_WEB_APP_URL;
 
-  if (!SHEET_WEB_APP_URL) {
-    console.warn("⚠️ SHEET_WEB_APP_URL env missing, skip append");
-    return;
-  }
-  
-  try {
-    const response = await fetch(SHEET_WEB_APP_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(row),
-    });
-
-    const data = await response.json();
-    if (data.status === 'success') {
-      console.log("✅ Data berhasil direkap ke Sheets (via Apps Script).");
-    } else {
-      console.error("❌ Gagal rekap data ke Sheets:", data.message);
+    if (!SHEET_WEB_APP_URL) {
+        console.warn("⚠️ SHEET_WEB_APP_URL env missing, skip append");
+        return;
     }
-  } catch (error) {
-    console.error("❌ Error saat menghubungi Google Apps Script:", error);
-  }
+    
+    try {
+        const response = await fetch(SHEET_WEB_APP_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(row),
+        });
+
+        const data = await response.json();
+        if (data.status === 'success') {
+            console.log("✅ Data berhasil direkap ke Sheets (via Apps Script).");
+        } else {
+            console.error("❌ Gagal rekap data ke Sheets:", data.message);
+        }
+    } catch (error) {
+        console.error("❌ Error saat menghubungi Google Apps Script:", error);
+    }
 }
 
 export default async function handler(req, res) {
-  console.log("🔥 [generate-ticket] API HIT");
+    console.log("🔥 [generate-ticket] API HIT");
 
-  if (req.method !== "POST") {
-    return res.status(405).json({ error: "Method Not Allowed" });
-  }
-
-  try {
-    const body = typeof req.body === "string" ? JSON.parse(req.body) : req.body;
-    console.log("📩 Received body:", body);
-
-    const {
-      name: rawName = "",
-      email: rawEmail = "",
-      wa: rawWa = "",
-      social: rawSocial = "",
-      fandom: rawFandom = "",
-      tickets = "1",
-      payment = "",
-      paymentMethod = "",
-      song: rawSong = "",
-      proofBase64 = "",
-    } = body;
-
-    if (!rawName || !rawEmail) {
-      return res.status(400).json({ error: "Missing name or email" });
+    if (req.method !== "POST") {
+        return res.status(405).json({ error: "Method Not Allowed" });
     }
 
-    // FIX 1: Hapus karakter non-ASCII/tersembunyi dari input
-    const name = String(rawName).trim();
-    const email = String(rawEmail).trim();
-    const wa = String(rawWa).trim();
-    const social = String(rawSocial).trim();
-    const fandom = String(rawFandom).trim();
-    const song = String(rawSong).trim();
+    try {
+        const body = typeof req.body === "string" ? JSON.parse(req.body) : req.body;
+        console.log("📩 Received body:", body);
 
-    const ticketCount = Math.max(1, Math.min(100, Number(tickets || 1)));
-    
-    // Gunakan format tanggal yang paling sederhana dan aman (ISO)
-    const issuedAt = new Date().toISOString().replace('T', ' ').substring(0, 19) + " WIB";
+        const {
+            name: rawName = "",
+            email: rawEmail = "",
+            wa: rawWa = "",
+            social: rawSocial = "",
+            fandom: rawFandom = "",
+            tickets = "1",
+            payment = "",
+            paymentMethod = "",
+            song: rawSong = "",
+            proofBase64 = "",
+        } = body;
 
-    const RESEND_API_KEY = process.env.RESEND_API_KEY;
-    const RESEND_FROM =
-      process.env.RESEND_FROM || "NORAEHYBE <noreply@noraehybe.my.id>";
+        if (!rawName || !rawEmail) {
+            return res.status(400).json({ error: "Missing name or email" });
+        }
 
-    if (!RESEND_API_KEY) {
-      console.error("❌ RESEND_API_KEY missing");
-      return res.status(500).json({ error: "Missing Resend API key" });
-    }
+        // FIX 2: Membersihkan string
+        const name = String(rawName).trim();
+        const email = String(rawEmail).trim();
+        const wa = String(rawWa).trim();
+        const social = String(rawSocial).trim();
+        const fandom = String(rawFandom).trim();
+        const song = String(rawSong).trim();
 
-    const normalizedPayment = payment.trim().toLowerCase();
-    const normalizedMethod = paymentMethod.trim().toLowerCase();
-    let emailPayload;
+        const ticketCount = Math.max(1, Math.min(100, Number(tickets || 1)));
+        
+        // Gunakan format tanggal yang paling sederhana dan aman (ISO)
+        const issuedAt = new Date().toISOString().replace('T', ' ').substring(0, 19) + " WIB";
 
-    // === 💰 FULL PAYMENT (PDF LUNAS)
-    if (normalizedPayment.includes("full")) {
-      const pdfDoc = await PDFDocument.create();
-      const page = pdfDoc.addPage([595, 842]);
-      
-// ⭐ GUNAKAN FONT STANDAR (Ini adalah penggantinya, font ini ringan!)
-    const font = await pdfDoc.embedFont(StandardFonts.Helvetica) 
-      
-      // FIX 3: Pastikan tidak ada EMOJI di Teks PDF
-      const lines = [
-        "NORAE HYBE — E-Ticket", 
-        "",
-        `Nama: ${name}`,
-        `Email: ${email}`,
-        `WhatsApp: ${wa}`,
-        `Social: ${social}`,
-        `Fandom: ${fandom}`,
-        `Jumlah Tiket: ${ticketCount}`,
-        `Status Pembayaran: LUNAS`, 
-        `Metode Pembayaran: ${paymentMethod}`,
-        "",
-        `Song Request: ${song || "-"}`,
-        `Issued: ${issuedAt}`,
-      ];
+        const RESEND_API_KEY = process.env.RESEND_API_KEY;
+        const RESEND_FROM =
+            process.env.RESEND_FROM || "NORAEHYBE <noreply@noraehybe.my.id>";
 
-      let y = 780;
-      for (const line of lines) {
-        // ⭐ LANGKAH 3: Gunakan custom font yang sudah ditanamkan
-        page.drawText(line, { x: 60, y, size: 12, font, color: rgb(0, 0, 0) });
-        y -= 22;
-      }
+        if (!RESEND_API_KEY) {
+            console.error("❌ RESEND_API_KEY missing");
+            return res.status(500).json({ error: "Missing Resend API key" });
+        }
 
-      const pdfBytes = await pdfDoc.save();
-      const pdfBase64 = Buffer.from(pdfBytes).toString("base64");
+        const normalizedPayment = payment.trim().toLowerCase();
+        const normalizedMethod = paymentMethod.trim().toLowerCase();
+        let emailPayload;
 
-      emailPayload = {
-        from: RESEND_FROM,
-        to: [email],
-        subject: "NORAE HYBE - E-Ticket (LUNAS)", 
-        html: `
-          <p>Hai ${name},</p>
-          <p>Terima kasih sudah melakukan <b>pembayaran penuh (Full Payment)</b> untuk <b>NORAE HYBE</b>!</p>
-          <p>Pembayaran kamu via <b>${paymentMethod}</b> telah kami terima.</p>
-          <p>Tiket kamu terlampir di bawah ini.</p>
-          <p><i>Issued at: ${issuedAt}</i></p>
-        `,
-        attachments: [
-          {
-            name: `NORAEHYBE_Ticket_${name}.pdf`,
-            type: "application/pdf",
-            // FIX 4: Ganti 'data' menjadi 'content'
-            content: pdfBase64, 
-          },
-        ],
-      };
-    }
+        // ⭐ FIX 3: Upload Bukti ke imgbb di awal (agar proofUrl ada saat PDF dibuat & rekap)
+        let proofUrl = null;
+        if (proofBase64) {
+            proofUrl = await uploadToImgbb(proofBase64);
+        }
 
-    // === 💵 DP (Down Payment)
-    else if (normalizedPayment.includes("dp")) {
-      let targetText = "";
-      if (normalizedMethod.includes("blu")) {
-        targetText = "Blu by BCA Digital — 001045623223 (Thia Anisyafitri)";
-      } else if (normalizedMethod.includes("shopee")) {
-        targetText = "ShopeePay — 081221994247 (Thia Anisyafitri)";
-      } else if (normalizedMethod.includes("dana")) {
-        targetText = "DANA — 081221994247 (Thia Anisyafitri)";
-      } else {
-        targetText = "Hubungi panitia untuk detail rekening pembayaran.";
-      }
+        // === 💰 FULL PAYMENT (PDF LUNAS)
+        if (normalizedPayment.includes("full")) {
+            const pdfDoc = await PDFDocument.create();
+            const page = pdfDoc.addPage([595, 842]);
+            
+            // Menggunakan StandardFonts.Helvetica karena Anda sudah mengimpornya
+            const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+            
+            // FIX 4: Susunan Teks PDF
+            const lines = [
+                "NORAE HYBE — E-Ticket", 
+                "==================================================",
+                `Nama: ${name}`,
+                `Email: ${email}`,
+                `WhatsApp: ${wa}`,
+                `Social Media: ${social}`,
+                `Fandom: ${fandom}`,
+                `Jumlah Tiket: ${ticketCount}`,
+                "", // Baris kosong
+                `Status Pembayaran: LUNAS (Full Payment)`, 
+                `Metode Pembayaran: ${paymentMethod}`,
+                `Link Bukti Bayar: ${proofUrl || "Bukti belum terupload/tidak terlampir"}`, // Tambahkan URL Bukti
+                "", // Baris kosong
+                `Song Request: ${song || "-"}`,
+                `Issued: ${issuedAt}`,
+                "==================================================",
+                "Tunjukkan E-Ticket ini (PDF) saat penukaran tiket fisik.",
+            ];
 
-      emailPayload = {
-        from: RESEND_FROM,
-        to: [email],
-        subject: "NORAE HYBE - Instruksi Pembayaran DP", 
-        html: `
-          <p>Halo <b>${name}</b>,</p>
-          <p>Terima kasih sudah mendaftar <b>NORAE HYBE</b>!</p>
-          <p>Kamu memilih <b>DP (Down Payment)</b> sebesar Rp50.000.</p>
-          <p>Metode pembayaran: <b>${paymentMethod}</b></p>
-          <p>Silakan lakukan pembayaran ke:</p>
-          <ul><li>${targetText}</li></ul>
-          <p>Setelah pembayaran, kirim bukti ke panitia (Odi – +62 895-3647-33788).</p>
-          <p>Terima kasih!</p> 
-        `,
-      };
-    }
+            let y = 780; // Posisi Y awal
+            for (const line of lines) {
+                // Gambar teks menggunakan font yang sudah ditanamkan
+                page.drawText(line, { x: 60, y, size: 12, font, color: rgb(0, 0, 0) });
+                y -= 16; // Jarak antar baris
+            }
 
-    // === 📋 Fallback (lainnya)
-    else {
-      emailPayload = {
-        from: RESEND_FROM,
-        to: [email],
-        subject: "NORAE HYBE - Registration Received", 
-        html: `
+            const pdfBytes = await pdfDoc.save();
+            const pdfBase64 = Buffer.from(pdfBytes).toString("base64");
+
+            emailPayload = {
+                from: RESEND_FROM,
+                to: [email],
+                subject: "NORAE HYBE - E-Ticket (LUNAS)", 
+                html: `
+                    <p>Hai ${name},</p>
+                    <p>Terima kasih sudah melakukan <b>pembayaran penuh (Full Payment)</b> untuk <b>NORAE HYBE</b>!</p>
+                    <p>Pembayaran kamu via <b>${paymentMethod}</b> telah kami terima.</p>
+                    <p><b>E-Ticket</b> kamu terlampir di bawah ini.</p>
+                    <p><i>Issued at: ${issuedAt}</i></p>
+                `,
+                attachments: [
+                    {
+                        name: `NORAEHYBE_Ticket_${name}.pdf`,
+                        type: "application/pdf",
+                        content: pdfBase64, // Menggunakan 'content'
+                    },
+                ],
+            };
+        }
+
+        // === 💵 DP (Down Payment)
+        else if (normalizedPayment.includes("dp")) {
+            let targetText = "";
+            if (normalizedMethod.includes("blu")) {
+                targetText = "Blu by BCA Digital — 001045623223 (Thia Anisyafitri)";
+            } else if (normalizedMethod.includes("shopee")) {
+                targetText = "ShopeePay — 081221994247 (Thia Anisyafitri)";
+            } else if (normalizedMethod.includes("dana")) {
+                targetText = "DANA — 081221994247 (Thia Anisyafitri)";
+            } else {
+                targetText = "Hubungi panitia untuk detail rekening pembayaran.";
+            }
+
+            emailPayload = {
+                from: RESEND_FROM,
+                to: [email],
+                subject: "NORAE HYBE - Instruksi Pembayaran DP", 
+                html: `
+                    <p>Halo <b>${name}</b>,</p>
+                    <p>Terima kasih sudah mendaftar <b>NORAE HYBE</b>!</p>
+                    <p>Kamu memilih <b>DP (Down Payment)</b>. Sisa pembayaran harus dilunasi sebelum tanggal yang ditentukan.</p>
+                    <p>Metode pembayaran: <b>${paymentMethod}</b></p>
+                    <p>Silakan lakukan pembayaran DP ke:</p>
+                    <ul><li>${targetText}</li></ul>
+                    <p>Setelah pembayaran, kirim bukti ke panitia (Odi – +62 895-3647-33788).</p>
+                    <p>Terima kasih!</p> 
+                `,
+            };
+        }
+
+        // === 📋 Fallback (lainnya)
+        else {
+            emailPayload = {
+                from: RESEND_FROM,
+                to: [email],
+                subject: "NORAE HYBE - Registration Received", 
+                html: `
 <p>Halo <b>${name}</b>,</p>
 <p>Terima kasih sudah mendaftar <b>NORAE HYBE</b>!</p> 
 <p>Kami sudah menerima datamu dengan baik.</p>
@@ -187,99 +198,88 @@ export default async function handler(req, res) {
 <p>Kami akan segera mengirimkan konfirmasi lebih lanjut.</p> 
 <p>Salam hangat,<br><b>Tim NORAE HYBE</b></p>
 
-        `,
-      };
+                `,
+            };
+        }
+
+        // === Kirim email
+        const resp = await fetch(RESEND_API, {
+            method: "POST",
+            headers: {
+                Authorization: `Bearer ${RESEND_API_KEY}`,
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(emailPayload),
+        });
+
+        const result = await resp.text();
+        console.log("📧 Resend response:", result);
+
+        if (!resp.ok) {
+            return res
+                .status(500)
+                .json({ error: "Failed to send email", detail: result });
+        }
+
+        // === Simpan ke Google Sheet
+        await appendToSheet({
+            name,
+            email,
+            wa,
+            social,
+            fandom,
+            tickets: String(ticketCount),
+            payment,
+            paymentMethod,
+            song,
+            timestamp: issuedAt, // Mengirim issuedAt dengan nama key 'timestamp'
+            proofLink: proofUrl, // Mengirim proofUrl dengan nama key 'proofLink'
+        });
+
+        return res
+            .status(200)
+            .json({ success: true, message: "Email sent successfully" });
+    } catch (err) {
+        console.error("❌ API ERROR:", err);
+        return res
+            .status(500)
+            .json({ error: err.message || "Internal Server Error" });
     }
-
-    // === Upload Bukti ke imgbb (kalau ada)
-    let proofUrl = null;
-    if (proofBase64) {
-      proofUrl = await uploadToImgbb(proofBase64);
-    }
-
-    // === Kirim email
-    const resp = await fetch(RESEND_API, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${RESEND_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(emailPayload),
-    });
-
-    const result = await resp.text();
-    console.log("📧 Resend response:", result);
-
-    if (!resp.ok) {
-      return res
-        .status(500)
-        .json({ error: "Failed to send email", detail: result });
-    }
-
-    // === Simpan ke Google Sheet
-    await appendToSheet({
-      name,
-      email,
-      wa,
-      social,
-      fandom,
-      tickets: String(ticketCount),
-      payment,
-      paymentMethod,
-      song,
-      timestamp: issuedAt, // Mengirim issuedAt dengan nama key 'timestamp'
-      proofLink: proofUrl, // Mengirim proofUrl dengan nama key 'proofLink'
-    });
-
-    return res
-      .status(200)
-      .json({ success: true, message: "Email sent successfully" });
-  } catch (err) {
-    console.error("❌ API ERROR:", err);
-    return res
-      .status(500)
-      .json({ error: err.message || "Internal Server Error" });
-  }
 }
 
 /* === Upload ke imgbb === */
 async function uploadToImgbb(base64Image) {
-  try {
-    const apiKey = process.env.IMGBB_API_KEY;
-    if (!apiKey) {
-      console.error("❌ IMGBB_API_KEY missing");
-      return null;
+    // ... (Fungsi ini tidak diubah, tetap di bawah)
+    try {
+        const apiKey = process.env.IMGBB_API_KEY;
+        if (!apiKey) {
+            console.error("❌ IMGBB_API_KEY missing");
+            return null;
+        }
+
+        if (!base64Image || !base64Image.startsWith("data:image")) {
+            console.warn("⚠️ No valid base64 image provided");
+            return null;
+        }
+
+        const form = new FormData();
+        form.append("image", base64Image.split(",")[1]);
+
+        const resp = await fetch(`https://api.imgbb.com/1/upload?key=${apiKey}`, {
+            method: "POST",
+            body: form,
+        });
+
+        const data = await resp.json();
+        if (data?.data?.url) {
+            console.log("✅ Bukti pembayaran terupload:", data.data.url);
+            return data.data.url;
+        } else {
+            console.error("❌ Upload ke imgbb gagal:", data);
+            return null;
+        }
+    } catch (err) {
+        console.error("❌ Upload error:", err);
+        return null;
     }
-
-    if (!base64Image || !base64Image.startsWith("data:image")) {
-      console.warn("⚠️ No valid base64 image provided");
-      return null;
-    }
-
-    const form = new FormData();
-    form.append("image", base64Image.split(",")[1]);
-
-    const resp = await fetch(`https://api.imgbb.com/1/upload?key=${apiKey}`, {
-      method: "POST",
-      body: form,
-    });
-
-    const data = await resp.json();
-    if (data?.data?.url) {
-      console.log("✅ Bukti pembayaran terupload:", data.data.url);
-      return data.data.url;
-    } else {
-      console.error("❌ Upload ke imgbb gagal:", data);
-      return null;
-    }
-  } catch (err) {
-    console.error("❌ Upload error:", err);
-    return null;
-  }
 }
-
-
-
-
-
-

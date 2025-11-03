@@ -32,9 +32,9 @@ export default async function handler(req, res) {
     }
 
     const ticketCount = Math.max(1, Math.min(100, Number(tickets || 1)));
-    const issuedAt = new Date().toLocaleString("id-ID", {
-      timeZone: "Asia/Jakarta",
-    });
+    
+    // ⭐ FIX 1: Ubah format tanggal ke ISO String yang lebih aman (kurangi risiko encoding)
+    const issuedAt = new Date().toISOString().replace('T', ' ').substring(0, 19) + " WIB";
 
     const RESEND_API_KEY = process.env.RESEND_API_KEY;
     const RESEND_FROM =
@@ -54,10 +54,10 @@ export default async function handler(req, res) {
       const pdfDoc = await PDFDocument.create();
       const page = pdfDoc.addPage([595, 842]);
       
-      // ✅ FIX 1: Gunakan HelveticaBold (Paling Stabil)
+      // ✅ FIX 2: Gunakan HelveticaBold (Paling Stabil)
       const font = await pdfDoc.embedFont(StandardFonts.HelveticaBold); 
 
-      // ✅ FIX 2: Hapus semua EMOJI dari Teks PDF
+      // ✅ FIX 3: Pastikan tidak ada EMOJI di Teks PDF
       const lines = [
         "NORAE HYBE — E-Ticket", 
         "",
@@ -98,7 +98,7 @@ export default async function handler(req, res) {
           {
             name: `NORAEHYBE_Ticket_${name}.pdf`,
             type: "application/pdf",
-            // ✅ FIX 3: Ganti 'data' menjadi 'content'
+            // ✅ FIX 4: Ganti 'data' menjadi 'content'
             content: pdfBase64, 
           },
         ],

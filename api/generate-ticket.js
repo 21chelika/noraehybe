@@ -54,12 +54,12 @@ export default async function handler(req, res) {
       const pdfDoc = await PDFDocument.create();
       const page = pdfDoc.addPage([595, 842]);
       
-      // ✅ FIX 1: Ganti Helvetica ke TimesRoman untuk stabilitas encoding
-      const font = await pdfDoc.embedFont(StandardFonts.TimesRoman); 
+      // ✅ FIX 1: Gunakan HelveticaBold (Paling Stabil)
+      const font = await pdfDoc.embedFont(StandardFonts.HelveticaBold); 
 
-      // ✅ FIX 2: Hapus semua EMOJI dari Teks PDF/Email Subject
+      // ✅ FIX 2: Hapus semua EMOJI dari Teks PDF
       const lines = [
-        "NORAE HYBE — E-Ticket", // Dihapus: 🎫
+        "NORAE HYBE — E-Ticket", 
         "",
         `Nama: ${name}`,
         `Email: ${email}`,
@@ -67,7 +67,7 @@ export default async function handler(req, res) {
         `Social: ${social}`,
         `Fandom: ${fandom}`,
         `Jumlah Tiket: ${ticketCount}`,
-        `Status Pembayaran: LUNAS`, // Dihapus: ✅
+        `Status Pembayaran: LUNAS`, 
         `Metode Pembayaran: ${paymentMethod}`,
         "",
         `Song Request: ${song || "-"}`,
@@ -86,18 +86,19 @@ export default async function handler(req, res) {
       emailPayload = {
         from: RESEND_FROM,
         to: [email],
-        subject: "NORAE HYBE - E-Ticket (LUNAS)", // Dihapus: 🎫
+        subject: "NORAE HYBE - E-Ticket (LUNAS)", 
         html: `
           <p>Hai ${name},</p>
           <p>Terima kasih sudah melakukan <b>pembayaran penuh (Full Payment)</b> untuk <b>NORAE HYBE</b>!</p>
           <p>Pembayaran kamu via <b>${paymentMethod}</b> telah kami terima.</p>
-          <p>Tiket kamu terlampir di bawah ini.</p> <p><i>Issued at: ${issuedAt}</i></p>
+          <p>Tiket kamu terlampir di bawah ini.</p>
+          <p><i>Issued at: ${issuedAt}</i></p>
         `,
         attachments: [
           {
             name: `NORAEHYBE_Ticket_${name}.pdf`,
             type: "application/pdf",
-            // ✅ FIX 3: Ganti 'data' menjadi 'content' (Sesuai Resend API)
+            // ✅ FIX 3: Ganti 'data' menjadi 'content'
             content: pdfBase64, 
           },
         ],
@@ -120,7 +121,7 @@ export default async function handler(req, res) {
       emailPayload = {
         from: RESEND_FROM,
         to: [email],
-        subject: "NORAE HYBE - Instruksi Pembayaran DP", // Dihapus: 💰
+        subject: "NORAE HYBE - Instruksi Pembayaran DP", 
         html: `
           <p>Halo <b>${name}</b>,</p>
           <p>Terima kasih sudah mendaftar <b>NORAE HYBE</b>!</p>
@@ -129,7 +130,8 @@ export default async function handler(req, res) {
           <p>Silakan lakukan pembayaran ke:</p>
           <ul><li>${targetText}</li></ul>
           <p>Setelah pembayaran, kirim bukti ke panitia (Odi – +62 895-3647-33788).</p>
-          <p>Terima kasih!</p> `,
+          <p>Terima kasih!</p> 
+        `,
       };
     }
 
@@ -138,15 +140,17 @@ export default async function handler(req, res) {
       emailPayload = {
         from: RESEND_FROM,
         to: [email],
-        subject: "NORAE HYBE - Registration Received", // Dihapus: 📋
+        subject: "NORAE HYBE - Registration Received", 
         html: `
 <p>Halo <b>${name}</b>,</p>
-<p>Terima kasih sudah mendaftar <b>NORAE HYBE</b>!</p> <p>Kami sudah menerima datamu dengan baik.</p>
+<p>Terima kasih sudah mendaftar <b>NORAE HYBE</b>!</p> 
+<p>Kami sudah menerima datamu dengan baik.</p>
 <p>Jika <b>PDF E-ticket</b> belum kamu terima, silakan hubungi:</p>
 <p>📞 ODI (WhatsApp: +62 895-3647-33788)</p>
 <p>Dan jangan lupa bergabung ke grup peserta di sini:<br>
 <a href="https://chat.whatsapp.com/E1Vs1uySRU6LBkx6xwHmTd?mode=wwt">Grup WhatsApp NORAE HYBE</a></p>
-<p>Kami akan segera mengirimkan konfirmasi lebih lanjut.</p> <p>Salam hangat,<br><b>Tim NORAE HYBE</b></p>
+<p>Kami akan segera mengirimkan konfirmasi lebih lanjut.</p> 
+<p>Salam hangat,<br><b>Tim NORAE HYBE</b></p>
 
         `,
       };

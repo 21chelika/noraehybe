@@ -2,9 +2,6 @@ import { PDFDocument, rgb } from "pdf-lib";
 
 const RESEND_API = "https://api.resend.com/emails";
 
-// ⭐ IMPORT FONT BASE64 DARI FILE TERPISAH
-import { MONTSERRAT_FONT_BASE64 } from "./montserrat-regular-base64.js";
-
 /* === Sheets Helper (RINGAN) === */
 async function appendToSheet(row) {
   const SHEET_WEB_APP_URL = process.env.SHEET_WEB_APP_URL;
@@ -93,10 +90,8 @@ export default async function handler(req, res) {
       const pdfDoc = await PDFDocument.create();
       const page = pdfDoc.addPage([595, 842]);
       
-      // ⭐ LANGKAH 2: Tanamkan Custom Font UTF-8
-      const fontBytes = Buffer.from(MONTSERRAT_FONT_BASE64, 'base64');
-      const customFont = await pdfDoc.embedFont(fontBytes);
-      const font = customFont; 
+// ⭐ GUNAKAN FONT STANDAR (Ini adalah penggantinya, font ini ringan!)
+    const font = await pdfDoc.embedFont(StandardFonts.Helvetica) 
       
       // FIX 3: Pastikan tidak ada EMOJI di Teks PDF
       const lines = [
@@ -284,6 +279,7 @@ async function uploadToImgbb(base64Image) {
     return null;
   }
 }
+
 
 
 

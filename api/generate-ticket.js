@@ -53,10 +53,11 @@ export default async function handler(req, res) {
     if (normalizedPayment.includes("full")) {
       const pdfDoc = await PDFDocument.create();
       const page = pdfDoc.addPage([595, 842]);
-      // ⭐ PERBAIKAN FONT: Gunakan TimesRoman untuk encoding yang lebih aman
-      const font = await pdfDoc.embedFont(StandardFonts.TimesRoman);
+      
+      // ✅ FIX 1: Ganti Helvetica ke TimesRoman untuk stabilitas encoding
+      const font = await pdfDoc.embedFont(StandardFonts.TimesRoman); 
 
-      // --- PERBAIKAN UTAMA DI SINI: HAPUS EMOJI DARI TEKS PDF
+      // ✅ FIX 2: Hapus semua EMOJI dari Teks PDF/Email Subject
       const lines = [
         "NORAE HYBE — E-Ticket", // Dihapus: 🎫
         "",
@@ -85,8 +86,7 @@ export default async function handler(req, res) {
       emailPayload = {
         from: RESEND_FROM,
         to: [email],
-        // Dihapus: 🎫
-        subject: "NORAE HYBE - E-Ticket (LUNAS)",
+        subject: "NORAE HYBE - E-Ticket (LUNAS)", // Dihapus: 🎫
         html: `
           <p>Hai ${name},</p>
           <p>Terima kasih sudah melakukan <b>pembayaran penuh (Full Payment)</b> untuk <b>NORAE HYBE</b>!</p>
@@ -97,7 +97,8 @@ export default async function handler(req, res) {
           {
             name: `NORAEHYBE_Ticket_${name}.pdf`,
             type: "application/pdf",
-            content: pdfBase64,
+            // ✅ FIX 3: Ganti 'data' menjadi 'content' (Sesuai Resend API)
+            content: pdfBase64, 
           },
         ],
       };
@@ -119,8 +120,7 @@ export default async function handler(req, res) {
       emailPayload = {
         from: RESEND_FROM,
         to: [email],
-        // Dihapus: 💰
-        subject: "NORAE HYBE - Instruksi Pembayaran DP",
+        subject: "NORAE HYBE - Instruksi Pembayaran DP", // Dihapus: 💰
         html: `
           <p>Halo <b>${name}</b>,</p>
           <p>Terima kasih sudah mendaftar <b>NORAE HYBE</b>!</p>
@@ -138,8 +138,7 @@ export default async function handler(req, res) {
       emailPayload = {
         from: RESEND_FROM,
         to: [email],
-        // Dihapus: 📋
-        subject: "NORAE HYBE - Registration Received",
+        subject: "NORAE HYBE - Registration Received", // Dihapus: 📋
         html: `
 <p>Halo <b>${name}</b>,</p>
 <p>Terima kasih sudah mendaftar <b>NORAE HYBE</b>!</p> <p>Kami sudah menerima datamu dengan baik.</p>
@@ -147,8 +146,7 @@ export default async function handler(req, res) {
 <p>📞 ODI (WhatsApp: +62 895-3647-33788)</p>
 <p>Dan jangan lupa bergabung ke grup peserta di sini:<br>
 <a href="https://chat.whatsapp.com/E1Vs1uySRU6LBkx6xwHmTd?mode=wwt">Grup WhatsApp NORAE HYBE</a></p>
-<p>Kami akan segera mengirimkan konfirmasi lebih lanjut 💬</p>
-<p>Salam hangat,<br><b>Tim NORAE HYBE</b></p>
+<p>Kami akan segera mengirimkan konfirmasi lebih lanjut.</p> <p>Salam hangat,<br><b>Tim NORAE HYBE</b></p>
 
         `,
       };
@@ -289,5 +287,3 @@ async function appendToSheet(row) {
 
   console.log("✅ Data appended to Google Sheets");
 }
-
-

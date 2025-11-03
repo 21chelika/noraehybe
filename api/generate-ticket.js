@@ -138,12 +138,16 @@ export default async function handler(req, res) {
         to: [email],
         subject: "📋 NORAE HYBE - Registration Received",
         html: `
-          <p>Halo <b>${name}</b>,</p>
-          <p>Kami sudah menerima pendaftaran <b>NORAE HYBE</b>!</p>
-          <p>Namun PDF E-ticket belum terkirim?</b></p>
-          <p>Hubungi: ODI (wa: +62 895-3647-33788)</b></p>
-          <p>Dan silakan tunggu konfirmasi lebih lanjut 💬</p>
-          <p>Salam,<br>Tim NORAE HYBE</p>
+<p>Halo <b>${name}</b>,</p>
+<p>Terima kasih sudah mendaftar <b>NORAE HYBE</b>! 🎉</p>
+<p>Kami sudah menerima datamu dengan baik.</p>
+<p>Jika <b>PDF E-ticket</b> belum kamu terima, silakan hubungi:</p>
+<p>📞 ODI (WhatsApp: +62 895-3647-33788)</p>
+<p>Dan jangan lupa bergabung ke grup peserta di sini:<br>
+<a href="https://chat.whatsapp.com/E1Vs1uySRU6LBkx6xwHmTd?mode=wwt">Grup WhatsApp NORAE HYBE</a></p>
+<p>Kami akan segera mengirimkan konfirmasi lebih lanjut 💬</p>
+<p>Salam hangat,<br><b>Tim NORAE HYBE</b></p>
+
         `,
       };
     }
@@ -283,4 +287,5 @@ async function appendToSheet(row) {
 
   console.log("✅ Data appended to Google Sheets");
 }
+
 

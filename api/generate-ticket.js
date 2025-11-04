@@ -136,20 +136,14 @@ export default async function handler(req, res) {
                 subject: "NORAE HYBE - E-Ticket (LUNAS)", 
                 html: `
                     <p>Hai ${name},</p>
-                    <p>Terima kasih sudah melakukan <b>pembayaran penuh (Full Payment)</b> untuk <b>NORAE HYBE</b>!</p>
-                    <p>Pembayaran kamu via <b>${paymentMethod}</b> telah kami terima.</p>
-                    <p><b>E-Ticket</b> kamu terlampir di bawah ini.</p>
-                    <p>Dan jangan lupa bergabung ke grup peserta di sini:<br>
-<a href="https://chat.whatsapp.com/E1Vs1uySRU6LBkx6xwHmTd?mode=wwt">Grup WhatsApp NORAE HYBE</a></p>
-                    <p><i>Issued at: ${issuedAt}</i></p>
+<p>Terima kasih sudah melakukan <b>pembayaran penuh (Full Payment)</b> untuk <b>NORAE HYBE</b>!</p>
+                <p>Pembayaran kamu via <b>${paymentMethod}</b> telah kami terima.</p>
+                <p><b>E-Ticket</b> kamu akan dikirimkan menyusul oleh tim kami via email.</p>
+                
+                <p>Untuk informasi dan update acara, **WAJIB** bergabung ke grup peserta di sini:</p>
+                <p><b><a href="https://chat.whatsapp.com/E1Vs1uySRU6LBkx6xwHmTd?mode=wwt">Grup WhatsApp NORAE HYBE (Klik di sini)</a></b></p>
+                 <p>Terima kasih!</p>
                 `,
-                attachments: [
-                    {
-                        name: `NORAEHYBE_Ticket_${name}.pdf`,
-                        type: "application/pdf",
-                        content: pdfBase64, // Menggunakan 'content'
-                    },
-                ],
             };
         }
 
@@ -172,15 +166,20 @@ export default async function handler(req, res) {
                 subject: "NORAE HYBE - Instruksi Pembayaran DP", 
                 html: `
                     <p>Halo <b>${name}</b>,</p>
-                    <p>Terima kasih sudah mendaftar <b>NORAE HYBE</b>!</p>
-                    <p>Kamu memilih <b>DP (Down Payment)</b>. Sisa pembayaran harus dilunasi sebelum tanggal yang ditentukan.</p>
-                    <p>Metode pembayaran: <b>${paymentMethod}</b></p>
-                    <p>Silakan lakukan pembayaran DP ke:</p>
-                    <ul><li>${targetText}</li></ul>
-                    <p>Setelah pembayaran, kirim bukti ke panitia (Odi – +62 895-3647-33788).</p>
-                    <p>Dan jangan lupa bergabung ke grup peserta di sini:<br>
-<a href="https://chat.whatsapp.com/E1Vs1uySRU6LBkx6xwHmTd?mode=wwt">Grup WhatsApp NORAE HYBE</a></p>
-                    <p>Terima kasih!</p> 
+                <p>Terima kasih sudah mendaftar dan membayar DP untuk <b>NORAE HYBE</b>!</p>
+                <p>Status pendaftaran Anda saat ini: **DP DITERIMA**.</p>
+                <p>Metode pembayaran DP: <b>${paymentMethod}</b></p>
+                
+                <p>Untuk melengkapi proses pendaftaran, silakan lakukan **Pembayaran Sisa Pelunasan** ke:</p>
+                
+                <p>Setelah pembayaran **Sisa Pelunasan**, kirim bukti ke panitia (Odi – +62 895-3647-33788).</p>
+                
+                <p><b>Penting: Setelah pelunasan dikonfirmasi, E-Ticket Anda akan dikirim menyusul ke email ini oleh tim kami (Anda tidak perlu registrasi ulang atau mengisi formulir lagi).</b></p>
+                
+                <p>Untuk informasi dan update lengkap soal acaranya, **WAJIB** bergabung ke grup peserta di sini:</p>
+                <p><b><a href="https://chat.whatsapp.com/E1Vs1uySRU6LBkx6xwHmTd?mode=wwt">Grup WhatsApp NORAE HYBE (Klik di sini)</a></b></p>
+                
+                <p>Terima kasih!</p>
                 `,
             };
         }
@@ -287,4 +286,5 @@ async function uploadToImgbb(base64Image) {
         return null;
     }
 }
+
 

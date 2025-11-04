@@ -139,6 +139,8 @@ export default async function handler(req, res) {
                     <p>Terima kasih sudah melakukan <b>pembayaran penuh (Full Payment)</b> untuk <b>NORAE HYBE</b>!</p>
                     <p>Pembayaran kamu via <b>${paymentMethod}</b> telah kami terima.</p>
                     <p><b>E-Ticket</b> kamu terlampir di bawah ini.</p>
+                    <p>Dan jangan lupa bergabung ke grup peserta di sini:<br>
+<a href="https://chat.whatsapp.com/E1Vs1uySRU6LBkx6xwHmTd?mode=wwt">Grup WhatsApp NORAE HYBE</a></p>
                     <p><i>Issued at: ${issuedAt}</i></p>
                 `,
                 attachments: [
@@ -176,6 +178,8 @@ export default async function handler(req, res) {
                     <p>Silakan lakukan pembayaran DP ke:</p>
                     <ul><li>${targetText}</li></ul>
                     <p>Setelah pembayaran, kirim bukti ke panitia (Odi – +62 895-3647-33788).</p>
+                    <p>Dan jangan lupa bergabung ke grup peserta di sini:<br>
+<a href="https://chat.whatsapp.com/E1Vs1uySRU6LBkx6xwHmTd?mode=wwt">Grup WhatsApp NORAE HYBE</a></p>
                     <p>Terima kasih!</p> 
                 `,
             };
@@ -283,3 +287,4 @@ async function uploadToImgbb(base64Image) {
         return null;
     }
 }
+

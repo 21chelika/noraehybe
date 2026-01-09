@@ -131,21 +131,74 @@ export default async function handler(req, res) {
             const pdfBase64 = Buffer.from(pdfBytes).toString("base64");
 
             emailPayload = {
-                from: RESEND_FROM,
-                to: [email],
-                subject: "NORAE HYBE - E-Ticket (LUNAS)", 
-                html: `
-                    <p>Hai ${name},</p>
-<p>Terima kasih sudah melakukan <b>pembayaran penuh (Full Payment)</b> untuk <b>NORAE HYBE</b>!</p>
-                <p>Pembayaran kamu via <b>${paymentMethod}</b> telah kami terima.</p>
-                <p><b>E-Ticket</b> kamu akan dikirimkan menyusul oleh tim kami via email.</p>
-                
-                <p>Untuk informasi dan update acara, **WAJIB** bergabung ke grup peserta di sini:</p>
-                <p><b><a href="https://chat.whatsapp.com/E1Vs1uySRU6LBkx6xwHmTd?mode=wwt">Grup WhatsApp NORAE HYBE (Klik di sini)</a></b></p>
-                 <p>Terima kasih!</p>
-                `,
-            };
-        }
+  from: RESEND_FROM,
+  to: [email],
+  subject: "E-Ticket & Konfirmasi Pembayaran – NORAE HYBE VOL 2",
+  html: `
+    <p>Halo <b>${name}</b>,</p>
+
+    <p>
+      Terima kasih telah melakukan pendaftaran pada acara <b>NORAE HYBE VOL 2</b>.
+    </p>
+
+    <p>
+      Kami mengonfirmasi bahwa pembayaran Anda telah kami terima dengan baik dan
+      status pendaftaran Anda saat ini <b>TELAH LUNAS</b>.
+    </p>
+
+    <p>
+      Bersama email ini, kami melampirkan <b>E-Ticket</b> dalam bentuk file PDF
+      yang berisi <b>QR Code</b> sebagai tanda masuk ke area acara.
+    </p>
+
+    <p><b>Informasi penting terkait E-Ticket:</b></p>
+    <ul>
+      <li>QR Code berlaku untuk <b>${ticketCount}</b> orang</li>
+      <li>QR Code hanya dapat digunakan <b>satu kali</b></li>
+      <li>Silakan tunjukkan QR Code kepada panitia saat memasuki area acara</li>
+    </ul>
+
+    <p><b>Detail Acara:</b></p>
+    <ul>
+      <li><b>Tanggal:</b> ${eventDate}</li>
+      <li><b>Waktu:</b> ${eventTime}</li>
+      <li><b>Lokasi:</b> ${eventLocation}</li>
+    </ul>
+
+    <p>
+      Untuk mendapatkan informasi terbaru seputar acara, silakan bergabung ke
+      <b>Grup WhatsApp Peserta</b> melalui tautan berikut:
+    </p>
+
+    <p>
+      👉 <a href="${whatsappGroupLink}">
+        Grup WhatsApp NORAE HYBE VOL 2
+      </a>
+    </p>
+
+    <p><b>Apabila terdapat pertanyaan lebih lanjut, silakan menghubungi:</b></p>
+    <ul>
+      <li>Kak Odi – ${contactOdi}</li>
+      <li>Kak Chelika – ${contactChelika}</li>
+    </ul>
+
+    <p>
+      Mohon simpan E-Ticket ini dengan baik dan pastikan QR Code dapat ditampilkan
+      dengan jelas pada hari pelaksanaan acara.
+    </p>
+
+    <p>
+      Terima kasih atas partisipasi dan kepercayaan Anda.<br>
+      Kami menantikan kehadiran Anda di <b>NORAE HYBE VOL 2</b>.
+    </p>
+
+    <p>
+      Hormat kami,<br>
+      <b>Panitia NORAE HYBE VOL 2</b>
+    </p>
+  `,
+};
+
 
         // === 💵 DP (Down Payment)
         else if (normalizedPayment.includes("dp")) {
@@ -286,5 +339,6 @@ async function uploadToImgbb(base64Image) {
         return null;
     }
 }
+
 
 
